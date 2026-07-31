@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
+import { useI18n } from './i18n'
 
 type Page = 'home' | 'about' | 'sermons' | 'plan-visit' | 'give' | 'contact' | 'events' | 'ministries' | 'kama' | 'mothers-union' | 'sunday-school' | 'youth' | 'service-times' | 'leadership' | 'get-involved' | 'prayer-requests' | 'news' | 'gallery' | 'faq' | 'small-groups' | 'live' | 'testimonies'
 
 // ─── Reeded Glass Nav ────────────────────────────────────────────────────────
 
 function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
+  const { t } = useI18n()
   const [scrolled, setScrolled] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
 
@@ -15,24 +17,24 @@ function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
   }, [])
 
   const links: [string, Page][] = [
-    ['About', 'about'],
-    ['Sermons', 'sermons'],
-    ['Events', 'events'],
-    ['Ministries', 'ministries'],
-    ['Contact', 'contact'],
+    [t('nav.about'), 'about'],
+    [t('nav.sermons'), 'sermons'],
+    [t('nav.events'), 'events'],
+    [t('nav.ministries'), 'ministries'],
+    [t('nav.contact'), 'contact'],
   ]
 
   const moreLinks: [string, Page][] = [
-    ['Service Times', 'service-times'],
-    ['Leadership', 'leadership'],
-    ['Get Involved', 'get-involved'],
-    ['Prayer Requests', 'prayer-requests'],
-    ['News', 'news'],
-    ['Gallery', 'gallery'],
-    ['Small Groups', 'small-groups'],
-    ['Live Stream', 'live'],
-    ['Testimonies', 'testimonies'],
-    ['FAQ', 'faq'],
+    [t('menu.serviceTimes'), 'service-times'],
+    [t('menu.leadership'), 'leadership'],
+    [t('menu.getInvolved'), 'get-involved'],
+    [t('menu.prayerRequests'), 'prayer-requests'],
+    [t('menu.news'), 'news'],
+    [t('menu.gallery'), 'gallery'],
+    [t('menu.smallGroups'), 'small-groups'],
+    [t('menu.liveStream'), 'live'],
+    [t('menu.testimonies'), 'testimonies'],
+    [t('menu.faq'), 'faq'],
   ]
 
   const go = (p: Page) => { setMoreOpen(false); setPage(p); window.scrollTo(0, 0) }
@@ -55,17 +57,15 @@ function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
           onClick={() => { setPage('home'); window.scrollTo(0, 0) }}
           className="flex items-center gap-3"
         >
-          <div className="w-8 h-8 relative flex-shrink-0">
-            <div className="absolute inset-0 rounded-full border-2 border-charcoal" style={{ borderColor: scrolled ? '#22201D' : '#F7F5F1' }} />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3"
-              style={{ background: scrolled ? '#22201D' : '#F7F5F1', clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }} />
+          <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#F7F5F1', border: '1px solid rgba(184,178,168,0.35)' }}>
+            <img src="assets/images/logo/ack-crest.png" alt="ACK Berea Church, Tola Parish emblem" className="w-full h-full object-contain" />
           </div>
           <div className="leading-none">
             <div className="font-display text-sm font-600 tracking-tight" style={{ color: scrolled ? '#22201D' : '#F7F5F1' }}>
-              ACK Berea Church
+              {t('nav.churchName')}
             </div>
             <div className="text-[10px] uppercase tracking-[0.15em] font-medium" style={{ color: scrolled ? '#B8B2A8' : 'rgba(247,245,241,0.7)' }}>
-              Tola Parish
+              {t('nav.tolaParish')}
             </div>
           </div>
         </button>
@@ -95,7 +95,7 @@ function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
                 fontFamily: 'Inter, sans-serif',
               }}
             >
-              More
+              {t('nav.more')}
               <span style={{ transform: moreOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▾</span>
             </button>
             {moreOpen && (
@@ -141,7 +141,7 @@ function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
               letterSpacing: '0.04em',
             }}
           >
-            Plan Your Visit
+            {t('nav.planVisit')}
           </button>
         </nav>
 
@@ -151,7 +151,7 @@ function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
           className="md:hidden px-4 py-2 text-xs font-semibold uppercase tracking-wider"
           style={{ background: '#1B4CE0', color: '#F7F5F1' }}
         >
-          Visit
+          {t('nav.visit')}
         </button>
       </div>
     </header>
@@ -161,12 +161,13 @@ function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
 // ─── Bottom Mobile Nav ───────────────────────────────────────────────────────
 
 function BottomNav({ page, setPage, onMenu }: { page: Page; setPage: (p: Page) => void; onMenu: () => void }) {
-  const items: { label: string; page: Page; icon: string }[] = [
-    { label: 'Home', page: 'home', icon: '⌂' },
-    { label: 'Visit', page: 'plan-visit', icon: '✦' },
-    { label: 'Give', page: 'give', icon: '❤' },
-    { label: 'Watch', page: 'sermons', icon: '▶' },
-    { label: 'Menu', page: 'about', icon: '≡' },
+  const { t } = useI18n()
+  const items: { label: string; page: Page; icon: string; menu?: boolean }[] = [
+    { label: t('nav.home'), page: 'home', icon: '⌂' },
+    { label: t('nav.visit'), page: 'plan-visit', icon: '✦' },
+    { label: t('nav.give'), page: 'give', icon: '❤' },
+    { label: t('nav.watch'), page: 'sermons', icon: '▶' },
+    { label: t('nav.menu'), page: 'about', icon: '≡', menu: true },
   ]
 
   return (
@@ -182,8 +183,8 @@ function BottomNav({ page, setPage, onMenu }: { page: Page; setPage: (p: Page) =
       <div className="flex items-center justify-around h-[72px] pb-safe">
         {items.map((item) => (
           <button
-            key={item.label}
-            onClick={() => { if (item.label === 'Menu') { onMenu() } else { setPage(item.page); window.scrollTo(0, 0) } }}
+            key={item.page}
+            onClick={() => { if (item.menu) { onMenu() } else { setPage(item.page); window.scrollTo(0, 0) } }}
             className="flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center"
             style={{ color: page === item.page ? '#1B4CE0' : '#B8B2A8' }}
           >
@@ -201,42 +202,43 @@ function BottomNav({ page, setPage, onMenu }: { page: Page; setPage: (p: Page) =
 // ─── Mobile Menu Drawer ───────────────────────────────────────────────────────
 
 function MobileMenu({ open, page, setPage, onClose }: { open: boolean; page: Page; setPage: (p: Page) => void; onClose: () => void }) {
+  const { t } = useI18n()
   const groups: { title: string; items: [string, Page][] }[] = [
     {
-      title: 'Explore',
+      title: t('menu.explore'),
       items: [
-        ['Home', 'home'],
-        ['About Us', 'about'],
-        ['Service Times', 'service-times'],
-        ['Plan Your Visit', 'plan-visit'],
-        ['Sermons', 'sermons'],
-        ['Live Stream', 'live'],
+        [t('menu.home'), 'home'],
+        [t('menu.about'), 'about'],
+        [t('menu.serviceTimes'), 'service-times'],
+        [t('menu.planVisit'), 'plan-visit'],
+        [t('menu.sermons'), 'sermons'],
+        [t('menu.liveStream'), 'live'],
       ],
     },
     {
-      title: 'Community',
+      title: t('menu.community'),
       items: [
-        ['Ministries', 'ministries'],
-        ['Youth', 'youth'],
-        ['KAMA', 'kama'],
-        ["Mothers' Union", 'mothers-union'],
-        ['Sunday School', 'sunday-school'],
-        ['Small Groups', 'small-groups'],
+        [t('menu.ministries'), 'ministries'],
+        [t('menu.youth'), 'youth'],
+        [t('menu.kama'), 'kama'],
+        [t('menu.mothersUnion'), 'mothers-union'],
+        [t('menu.sundaySchool'), 'sunday-school'],
+        [t('menu.smallGroups'), 'small-groups'],
       ],
     },
     {
-      title: 'Connect',
+      title: t('menu.connect'),
       items: [
-        ['Get Involved', 'get-involved'],
-        ['Leadership', 'leadership'],
-        ['News', 'news'],
-        ['Gallery', 'gallery'],
-        ['Testimonies', 'testimonies'],
-        ['Prayer Requests', 'prayer-requests'],
-        ['Events', 'events'],
-        ['FAQ', 'faq'],
-        ['Give', 'give'],
-        ['Contact', 'contact'],
+        [t('menu.getInvolved'), 'get-involved'],
+        [t('menu.leadership'), 'leadership'],
+        [t('menu.news'), 'news'],
+        [t('menu.gallery'), 'gallery'],
+        [t('menu.testimonies'), 'testimonies'],
+        [t('menu.prayerRequests'), 'prayer-requests'],
+        [t('menu.events'), 'events'],
+        [t('menu.faq'), 'faq'],
+        [t('menu.give'), 'give'],
+        [t('menu.contact'), 'contact'],
       ],
     },
   ]
@@ -248,9 +250,14 @@ function MobileMenu({ open, page, setPage, onClose }: { open: boolean; page: Pag
       <div className="absolute inset-0 chromatic-gradient opacity-20" />
       <div className="relative px-6 py-6 min-h-full flex flex-col">
         <div className="flex items-center justify-between mb-8">
-          <div className="font-display text-lg font-600" style={{ color: '#F7F5F1' }}>
-            ACK Berea Church
-            <div className="text-[10px] uppercase tracking-[0.15em] font-sans" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Tola Parish</div>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#F7F5F1', border: '1px solid rgba(201,162,75,0.4)' }}>
+              <img src="assets/images/logo/ack-crest.png" alt="ACK Berea Church, Tola Parish emblem" className="w-full h-full object-contain" />
+            </div>
+            <div className="font-display text-lg font-600" style={{ color: '#F7F5F1' }}>
+              {t('nav.churchName')}
+              <div className="text-[10px] uppercase tracking-[0.15em] font-sans" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{t('nav.tolaParish')}</div>
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -287,7 +294,7 @@ function MobileMenu({ open, page, setPage, onClose }: { open: boolean; page: Pag
         ))}
 
         <div className="mt-auto pt-6 text-xs" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
-          Tola Road, Berea, Nairobi, Kenya<br />+254 20 123 4567
+          {t('footer.address')}<br />{t('footer.phone')}
         </div>
       </div>
     </div>
@@ -344,10 +351,11 @@ function SeriesTag({ label, color }: { label: string; color: string }) {
 // ─── HOME PAGE ───────────────────────────────────────────────────────────────
 
 function HomePage({ setPage }: { setPage: (p: Page) => void }) {
+  const { t } = useI18n()
   const sermonCards = [
     {
       num: '01',
-      title: 'The Bread of Life',
+      title: t('sermons.s1'),
       series: 'Gospel of John',
       date: 'Jul 27, 2025',
       duration: '42 min',
@@ -356,7 +364,7 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
     },
     {
       num: '02',
-      title: 'Walking by Faith',
+      title: t('sermons.s2'),
       series: 'Hebrews Series',
       date: 'Jul 20, 2025',
       duration: '38 min',
@@ -365,7 +373,7 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
     },
     {
       num: '03',
-      title: 'The Good Shepherd',
+      title: t('sermons.s3'),
       series: 'Gospel of John',
       date: 'Jul 13, 2025',
       duration: '45 min',
@@ -375,10 +383,10 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
   ]
 
   const quickLinks = [
-    { title: 'Sermons', desc: 'Watch & listen to messages', page: 'sermons' as Page, color: '#1B4CE0', shape: 'circle' },
-    { title: 'Events', desc: 'Upcoming gatherings', page: 'events' as Page, color: '#E8A93B', shape: 'square' },
-    { title: 'Give', desc: 'Support the parish', page: 'give' as Page, color: '#0F5C42', shape: 'triangle' },
-    { title: 'Ministries', desc: 'Find your community', page: 'ministries' as Page, color: '#C4432B', shape: 'circle' },
+    { title: t('home.sermonsTitle'), desc: t('home.sermonsDesc'), page: 'sermons' as Page, color: '#1B4CE0', shape: 'circle' },
+    { title: t('home.eventsTitle'), desc: t('home.eventsDesc'), page: 'events' as Page, color: '#E8A93B', shape: 'square' },
+    { title: t('home.giveTitle'), desc: t('home.giveDesc'), page: 'give' as Page, color: '#0F5C42', shape: 'triangle' },
+    { title: t('home.ministriesTitle'), desc: t('home.ministriesDesc'), page: 'ministries' as Page, color: '#C4432B', shape: 'circle' },
   ]
 
   return (
@@ -414,21 +422,24 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
                 border: '1px solid rgba(247,245,241,0.25)',
               }}
             >
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden mb-6 flex-shrink-0" style={{ background: '#F7F5F1', border: '1px solid rgba(201,162,75,0.5)', boxShadow: '0 4px 20px rgba(34,32,29,0.3)' }}>
+                <img src="assets/images/logo/ack-crest.png" alt="ACK Berea Church, Tola Parish emblem" className="w-full h-full object-contain" />
+              </div>
               <div className="text-xs uppercase tracking-[0.2em] font-medium mb-6" style={{ color: 'rgba(247,245,241,0.65)', fontFamily: 'Inter, sans-serif' }}>
-                Anglican Church of Kenya · Diocese of Mount Kenya South
+                {t('home.eyebrow')}
               </div>
               <h1 className="font-display mb-3" style={{ fontSize: 'clamp(2.4rem, 5vw, 4rem)', fontWeight: 700, lineHeight: 1.05, color: '#F7F5F1', letterSpacing: '-0.02em' }}>
-                ACK Berea<br />Church
+                {t('home.heroLine1')}<br />{t('home.heroLine2')}
               </h1>
               <div className="font-display text-lg italic mb-8" style={{ color: 'rgba(247,245,241,0.75)', fontWeight: 300 }}>
-                Tola Parish
+                {t('home.tolaParish')}
               </div>
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-px h-12" style={{ background: 'rgba(201,162,75,0.6)' }} />
                 <div>
-                  <div className="text-xs uppercase tracking-widest mb-1" style={{ color: 'rgba(247,245,241,0.55)', fontFamily: 'Inter, sans-serif' }}>Next Service</div>
-                  <div className="font-display text-xl font-600" style={{ color: '#F7F5F1' }}>Sunday · 8:00 AM & 10:30 AM</div>
-                  <div className="text-sm mt-0.5" style={{ color: 'rgba(247,245,241,0.65)', fontFamily: 'Inter, sans-serif' }}>Tola Road, Berea, Nairobi</div>
+                  <div className="text-xs uppercase tracking-widest mb-1" style={{ color: 'rgba(247,245,241,0.55)', fontFamily: 'Inter, sans-serif' }}>{t('home.nextService')}</div>
+                  <div className="font-display text-xl font-600" style={{ color: '#F7F5F1' }}>{t('home.serviceTimes')}</div>
+                  <div className="text-sm mt-0.5" style={{ color: 'rgba(247,245,241,0.65)', fontFamily: 'Inter, sans-serif' }}>{t('home.address')}</div>
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
@@ -437,14 +448,14 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
                   className="px-7 py-4 text-sm font-semibold uppercase tracking-wider transition-all hover:opacity-90 active:scale-95"
                   style={{ background: '#F7F5F1', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
                 >
-                  Plan Your Visit
+                  {t('home.planVisitBtn')}
                 </button>
                 <button
                   onClick={() => { setPage('sermons'); window.scrollTo(0, 0) }}
                   className="px-7 py-4 text-sm font-semibold uppercase tracking-wider transition-all hover:opacity-90"
                   style={{ border: '1px solid rgba(247,245,241,0.4)', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
                 >
-                  Watch Sermons
+                  {t('home.watchSermonsBtn')}
                 </button>
               </div>
             </div>
@@ -461,7 +472,7 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
               <div className="flex items-center gap-4">
                 <div className="h-px w-24" style={{ background: 'rgba(247,245,241,0.3)' }} />
                 <div className="font-display text-6xl italic font-300" style={{ color: 'rgba(247,245,241,0.15)' }}>
-                  Faith
+                  {t('home.faith')}
                 </div>
               </div>
               <div className="flex gap-3">
@@ -475,7 +486,7 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
 
         {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2" style={{ color: 'rgba(247,245,241,0.5)' }}>
-          <div className="text-[10px] uppercase tracking-widest" style={{ fontFamily: 'Inter, sans-serif' }}>Scroll</div>
+          <div className="text-[10px] uppercase tracking-widest" style={{ fontFamily: 'Inter, sans-serif' }}>{t('home.scroll')}</div>
           <div className="w-px h-8" style={{ background: 'rgba(247,245,241,0.3)' }} />
         </div>
       </section>
@@ -484,9 +495,9 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
       <section className="max-w-screen-xl mx-auto px-6 md:px-10 py-16 md:py-24">
         <div className="flex items-end justify-between mb-10">
           <div>
-            <SeriesTag label="Explore" color="#22201D" />
+            <SeriesTag label={t('home.explore')} color="#22201D" />
             <h2 className="font-display text-3xl md:text-4xl font-600" style={{ color: '#22201D', lineHeight: 1.1 }}>
-              What brings<br />you here?
+              {t('home.whatBrings')}
             </h2>
           </div>
           <div className="hidden md:block font-display text-7xl font-300 italic" style={{ color: '#B8B2A8', lineHeight: 1 }}>
@@ -530,7 +541,7 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
       <section style={{ background: '#22201D' }} className="py-16 md:py-24">
         <div className="max-w-screen-xl mx-auto px-6 md:px-10">
           <div className="flex items-center gap-4 mb-12">
-            <SeriesTag label="Latest Message" color="#1B4CE0" />
+            <SeriesTag label={t('home.latestMessage')} color="#1B4CE0" />
             <div className="flex-1 h-px" style={{ background: 'rgba(247,245,241,0.1)' }} />
           </div>
 
@@ -555,24 +566,24 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
                   </div>
                 </div>
                 <div className="absolute top-4 left-4">
-                  <SeriesTag label="Gospel of John" color="#1B4CE0" />
+                  <SeriesTag label={t('sermons.seriesJohn')} color="#1B4CE0" />
                 </div>
                 <div className="absolute bottom-4 right-4 text-xs" style={{ color: 'rgba(247,245,241,0.6)', fontFamily: 'Inter, sans-serif' }}>
-                  42 min
+                  42 {t('common.min')}
                 </div>
               </div>
               <div className="text-xs uppercase tracking-widest mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
-                Jul 27, 2025 · Rev. Samuel Mwangi
+                {t('home.sermonDate')}
               </div>
               <h3 className="font-display text-3xl md:text-4xl font-600 mb-4" style={{ color: '#F7F5F1', lineHeight: 1.1 }}>
-                The Bread of Life
+                {t('home.breadOfLife')}
               </h3>
               <button
                 onClick={() => { setPage('sermons'); window.scrollTo(0, 0) }}
                 className="text-sm font-medium uppercase tracking-wider flex items-center gap-2 transition-opacity hover:opacity-70"
                 style={{ color: '#E8A93B', fontFamily: 'Inter, sans-serif' }}
               >
-                Watch Full Sermon <span>→</span>
+                {t('home.watchFullSermon')} <span>→</span>
               </button>
             </div>
 
@@ -583,16 +594,16 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
                 style={{ borderLeft: '3px solid #C9A24B' }}
               >
                 <div className="font-display text-2xl italic font-300 mb-4" style={{ color: '#F7F5F1', lineHeight: 1.4 }}>
-                  "I am the bread of life. Whoever comes to me will never go hungry."
+                  {t('home.breadQuote')}
                 </div>
                 <div className="text-xs uppercase tracking-widest" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
-                  John 6:35
+                  {t('home.john635')}
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div className="text-xs uppercase tracking-widest mb-4" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
-                  More Sermons
+                  {t('home.moreSermons')}
                 </div>
                 {sermonCards.slice(1).map((s) => (
                   <button
@@ -628,19 +639,19 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
             />
           </div>
           <div>
-            <div className="text-xs uppercase tracking-[0.2em] mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Life Together</div>
+            <div className="text-xs uppercase tracking-[0.2em] mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{t('home.lifeTogether')}</div>
             <h2 className="font-display text-3xl md:text-4xl font-600 mb-5" style={{ color: '#22201D', lineHeight: 1.1 }}>
-              Growing Together<br />in Faith
+              {t('home.growingTogether')}
             </h2>
             <p className="text-base leading-relaxed mb-6" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif', maxWidth: '50ch' }}>
-              Our parish thrives on shared worship, fellowship, and service. From Sunday mornings to midweek studies, from children's laughter to seniors' wisdom — every person finds a place in this community.
+              {t('home.communityBody')}
             </p>
             <button
               onClick={() => { setPage('plan-visit'); window.scrollTo(0, 0) }}
               className="px-6 py-3 text-sm font-semibold uppercase tracking-wider transition-all hover:opacity-90"
               style={{ background: '#1B4CE0', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
             >
-              Plan Your Visit
+              {t('home.planVisitBtn')}
             </button>
           </div>
         </div>
@@ -651,9 +662,9 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
         <div className="max-w-screen-xl mx-auto px-6 md:px-10">
           <div className="grid md:grid-cols-3 gap-px" style={{ background: '#B8B2A8' }}>
             {[
-              { label: 'Sunday Services', val: '8:00 AM · 10:30 AM', sub: 'Main Sanctuary' },
-              { label: 'Wednesday Study', val: '6:00 PM', sub: 'Parish Hall' },
-              { label: 'Location', val: 'Tola Road, Berea', sub: 'Nairobi, Kenya' },
+              { label: t('home.sundayServices'), val: '8:00 AM · 10:30 AM', sub: t('home.mainSanctuary') },
+              { label: t('home.wednesdayStudy'), val: '6:00 PM', sub: t('home.parishHall') },
+              { label: t('home.location'), val: 'Tola Road, Berea', sub: t('home.nairobi') },
             ].map((item) => (
               <div key={item.label} className="p-8 md:p-10" style={{ background: '#F7F5F1' }}>
                 <div className="text-xs uppercase tracking-widest mb-2" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{item.label}</div>
@@ -673,18 +684,18 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
         />
         <div className="relative z-10 max-w-screen-xl mx-auto px-6 md:px-10 text-center">
           <div className="font-display text-xs uppercase tracking-[0.2em] mb-4" style={{ color: 'rgba(201,162,75,0.8)' }}>
-            Stay Connected
+            {t('home.stayConnected')}
           </div>
           <h2 className="font-display text-3xl md:text-5xl font-600 mb-4" style={{ color: '#F7F5F1', lineHeight: 1.1 }}>
-            Join our parish community
+            {t('home.joinParish')}
           </h2>
           <p className="text-base mb-10 max-w-md mx-auto" style={{ color: 'rgba(247,245,241,0.65)', fontFamily: 'Inter, sans-serif' }}>
-            Receive sermon notes, event announcements, and parish updates each week.
+            {t('home.newsletterBody')}
           </p>
           <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={e => e.preventDefault()}>
             <input
               type="email"
-              placeholder="Your email address"
+              placeholder={t('home.emailPlaceholder')}
               className="flex-1 px-5 py-4 text-sm outline-none"
               style={{
                 background: 'rgba(247,245,241,0.12)',
@@ -699,7 +710,7 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
               className="px-7 py-4 text-sm font-semibold uppercase tracking-wider"
               style={{ background: '#C9A24B', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
             >
-              Subscribe
+              {t('home.subscribe')}
             </button>
           </form>
         </div>
@@ -713,31 +724,32 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
 // ─── ABOUT PAGE ──────────────────────────────────────────────────────────────
 
 function AboutPage() {
+  const { t } = useI18n()
   const chapters = [
     {
       num: '01',
-      title: 'Our Story',
-      body: 'ACK Berea Church, Tola Parish was established in 1987 as part of the Anglican Church of Kenya within the Diocese of Mount Kenya South. What began as a small fellowship of thirty families has grown into a thriving parish of over 800 members, rooted in Scripture, worship, and community.',
+      title: t('about.storyTitle'),
+      body: t('about.storyBody'),
     },
     {
       num: '02',
-      title: 'Our Mission',
-      body: 'We exist to glorify God by making disciples of Jesus Christ through faithful preaching of the Word, sacramental worship, pastoral care, and compassionate service to our neighbours in Berea and beyond.',
+      title: t('about.missionTitle'),
+      body: t('about.missionBody'),
     },
     {
       num: '03',
-      title: 'What We Believe',
-      body: 'We hold to the historic faith of the Church as expressed in the Apostles\' and Nicene Creeds, the Thirty-Nine Articles, and the Book of Common Prayer. We affirm the authority of Holy Scripture as the Word of God and the sufficiency of Christ\'s atoning work for salvation.',
+      title: t('about.beliefTitle'),
+      body: t('about.beliefBody'),
     },
   ]
 
   const beliefs = [
-    'The Holy Trinity — Father, Son, and Holy Spirit',
-    'The full authority and sufficiency of Holy Scripture',
-    'Salvation by grace alone, through faith alone, in Christ alone',
-    'The bodily resurrection and second coming of Jesus Christ',
-    'The Church as the body of Christ, one, holy, catholic, and apostolic',
-    'Baptism and Holy Communion as means of grace',
+    t('about.b1'),
+    t('about.b2'),
+    t('about.b3'),
+    t('about.b4'),
+    t('about.b5'),
+    t('about.b6'),
   ]
 
   return (
@@ -746,11 +758,14 @@ function AboutPage() {
       <div className="pt-24 pb-16 px-6 md:px-10 max-w-screen-xl mx-auto">
         <div className="grid md:grid-cols-2 gap-12 items-end">
           <div>
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden mb-6" style={{ background: '#F7F5F1', border: '1px solid rgba(201,162,75,0.5)', boxShadow: '0 4px 20px rgba(34,32,29,0.12)' }}>
+              <img src="assets/images/logo/ack-crest.png" alt="ACK Berea Church, Tola Parish emblem" className="w-full h-full object-contain" />
+            </div>
             <div className="text-xs uppercase tracking-[0.2em] mb-6" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
-              Anglican Church of Kenya · Diocese of Mount Kenya South
+              {t('home.eyebrow')}
             </div>
             <h1 className="font-display mb-4" style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 700, lineHeight: 1.0, color: '#22201D', letterSpacing: '-0.02em' }}>
-              Who We<br /><em>Are</em>
+              {t('about.title')}
             </h1>
           </div>
           <div className="relative">
@@ -795,10 +810,10 @@ function AboutPage() {
       <div className="py-16 md:py-24" style={{ background: '#1E3A6D' }}>
         <div className="max-w-screen-xl mx-auto px-6 md:px-10">
           <div className="font-display text-xs uppercase tracking-[0.2em] mb-2" style={{ color: '#C9A24B' }}>
-            Statement of Faith
+            {t('about.statementOfFaith')}
           </div>
           <h2 className="font-display text-3xl font-600 mb-10" style={{ color: '#F7F5F1' }}>
-            What We Hold
+            {t('about.whatWeHold')}
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
             {beliefs.map((b, i) => (
@@ -821,19 +836,40 @@ function AboutPage() {
 // ─── SERMONS PAGE ────────────────────────────────────────────────────────────
 
 function SermonsPage() {
-  const [filter, setFilter] = useState('All')
-  const series = ['All', 'Gospel of John', 'Hebrews', 'Psalms', 'Romans']
-
-  const sermons = [
-    { title: 'The Bread of Life', series: 'Gospel of John', date: 'Jul 27, 2025', speaker: 'Rev. Samuel Mwangi', dur: '42 min', color: '#1B4CE0', img: 'photo-1507003211169-0a1dd7228f2d' },
-    { title: 'Walking by Faith', series: 'Hebrews', date: 'Jul 20, 2025', speaker: 'Rev. Samuel Mwangi', dur: '38 min', color: '#0F5C42', img: 'photo-1464207687429-7505649dae38' },
-    { title: 'The Good Shepherd', series: 'Gospel of John', date: 'Jul 13, 2025', speaker: 'Deacon Grace Wanjiku', dur: '45 min', color: '#6B1E2B', img: 'photo-1529070538774-1843cb3265df' },
-    { title: 'A Psalm of Ascent', series: 'Psalms', date: 'Jul 6, 2025', speaker: 'Rev. Samuel Mwangi', dur: '36 min', color: '#E8A93B', img: 'photo-1478147427282-58a87a433b2d' },
-    { title: 'Righteousness by Faith', series: 'Romans', date: 'Jun 29, 2025', speaker: 'Ven. Peter Kamau', dur: '48 min', color: '#C4432B', img: 'photo-1504052434569-70ad5836ab65' },
-    { title: 'Light of the World', series: 'Gospel of John', date: 'Jun 22, 2025', speaker: 'Rev. Samuel Mwangi', dur: '40 min', color: '#1E3A6D', img: 'photo-1518005020951-eccb494ad742' },
+  const { t } = useI18n()
+  const [filter, setFilter] = useState('all')
+  const [playing, setPlaying] = useState<string | null>(null)
+  const series = [
+    { key: 'all', label: t('sermons.all') },
+    { key: 'john', label: t('sermons.seriesJohn') },
+    { key: 'hebrews', label: t('sermons.seriesHebrews') },
+    { key: 'psalms', label: t('sermons.seriesPsalms') },
+    { key: 'romans', label: t('sermons.seriesRomans') },
   ]
 
-  const filtered = filter === 'All' ? sermons : sermons.filter(s => s.series === filter)
+  const seriesLabels: Record<string, string> = {
+    john: t('sermons.seriesJohn'),
+    hebrews: t('sermons.seriesHebrews'),
+    psalms: t('sermons.seriesPsalms'),
+    romans: t('sermons.seriesRomans'),
+  }
+
+  const sermons = [
+    { title: t('sermons.s1'), seriesKey: 'john', date: 'Jul 27, 2025', speaker: 'Rev. Samuel Mwangi', dur: '42 min', color: '#1B4CE0', videoId: 'OG5cJPkowBw' },
+    { title: t('sermons.s2'), seriesKey: 'hebrews', date: 'Jul 20, 2025', speaker: 'Rev. Samuel Mwangi', dur: '38 min', color: '#0F5C42', videoId: 'To60RJEDjd0' },
+    { title: t('sermons.s3'), seriesKey: 'john', date: 'Jul 13, 2025', speaker: 'Deacon Grace Wanjiku', dur: '45 min', color: '#6B1E2B', videoId: 'tyE-NFpAq3Y' },
+    { title: t('sermons.s4'), seriesKey: 'psalms', date: 'Jul 6, 2025', speaker: 'Rev. Samuel Mwangi', dur: '36 min', color: '#E8A93B', videoId: '1GIhgJZmjuM' },
+    { title: t('sermons.s5'), seriesKey: 'romans', date: 'Jun 29, 2025', speaker: 'Ven. Peter Kamau', dur: '48 min', color: '#C4432B', videoId: 'A2Q7gDSyJCk' },
+  ]
+
+  const filtered = filter === 'all' ? sermons : sermons.filter(s => s.seriesKey === filter)
+
+  useEffect(() => {
+    document.body.style.overflow = playing ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [playing])
+
+  const active = playing ? sermons.find(s => s.videoId === playing) : null
 
   return (
     <div className="page-fade" style={{ background: '#22201D', minHeight: '100vh' }}>
@@ -844,37 +880,44 @@ function SermonsPage() {
       >
         <div className="flex items-center justify-center gap-3">
           <div className="w-2 h-2 rounded-full pulse-live" style={{ background: '#F7F5F1' }} />
-          <span className="font-display italic text-lg" style={{ color: '#F7F5F1' }}>Watch Live — Sunday 8:00 AM & 10:30 AM</span>
+          <span className="font-display italic text-lg" style={{ color: '#F7F5F1' }}>{t('sermons.live')}</span>
           <button className="ml-4 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider" style={{ background: 'rgba(247,245,241,0.2)', color: '#F7F5F1', border: '1px solid rgba(247,245,241,0.3)', fontFamily: 'Inter, sans-serif' }}>
-            Join Stream
+            {t('sermons.joinStream')}
           </button>
         </div>
       </div>
 
       <div className="pt-24 pb-8 px-6 md:px-10 max-w-screen-xl mx-auto">
-        <div className="text-xs uppercase tracking-[0.2em] mb-4" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
-          Messages & Media
+        <div className="flex items-center gap-5 mb-6">
+          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#F7F5F1', border: '1px solid rgba(201,162,75,0.4)' }}>
+            <img src="assets/images/logo/ack-crest.png" alt="ACK Berea Church, Tola Parish emblem" className="w-full h-full object-contain" />
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-[0.2em] mb-1" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
+              {t('sermons.messagesMedia')}
+            </div>
+            <h1 className="font-display text-4xl md:text-6xl font-700" style={{ color: '#F7F5F1', letterSpacing: '-0.02em' }}>
+              {t('sermons.title')}
+            </h1>
+          </div>
         </div>
-        <h1 className="font-display text-4xl md:text-6xl font-700 mb-10" style={{ color: '#F7F5F1', letterSpacing: '-0.02em' }}>
-          Sermons
-        </h1>
 
         {/* Filters */}
         <div className="flex gap-2 flex-wrap mb-12">
           {series.map(s => (
             <button
-              key={s}
-              onClick={() => setFilter(s)}
+              key={s.key}
+              onClick={() => setFilter(s.key)}
               className="px-4 py-2 text-xs uppercase tracking-wider font-medium transition-all"
               style={{
-                background: filter === s ? '#1B4CE0' : 'transparent',
-                color: filter === s ? '#F7F5F1' : '#B8B2A8',
-                border: `1px solid ${filter === s ? '#1B4CE0' : 'rgba(184,178,168,0.3)'}`,
+                background: filter === s.key ? '#1B4CE0' : 'transparent',
+                color: filter === s.key ? '#F7F5F1' : '#B8B2A8',
+                border: `1px solid ${filter === s.key ? '#1B4CE0' : 'rgba(184,178,168,0.3)'}`,
                 fontFamily: 'Inter, sans-serif',
                 minHeight: 44,
               }}
             >
-              {s}
+              {s.label}
             </button>
           ))}
         </div>
@@ -884,6 +927,7 @@ function SermonsPage() {
           {filtered.map((s) => (
             <div
               key={s.title}
+              onClick={() => setPlaying(s.videoId)}
               className="group relative overflow-hidden cursor-pointer"
               style={{
                 background: `repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 9px), rgba(247,245,241,0.06)`,
@@ -892,19 +936,20 @@ function SermonsPage() {
             >
               <div className="relative aspect-video overflow-hidden" style={{ background: '#1A1814' }}>
                 <img
-                  src={`https://images.unsplash.com/${s.img}?w=500&h=280&fit=crop&auto=format`}
-                  alt={s.title}
-                  className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                  src={`https://img.youtube.com/vi/${s.videoId}/hqdefault.jpg`}
+                  alt={`${s.title} sermon video`}
+                  loading="lazy"
+                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                 />
                 <div className="absolute top-3 left-3">
-                  <SeriesTag label={s.series} color={s.color} />
+                  <SeriesTag label={seriesLabels[s.seriesKey]} color={s.color} />
                 </div>
-                <div className="absolute bottom-3 right-3 text-xs" style={{ color: 'rgba(247,245,241,0.6)', fontFamily: 'Inter, sans-serif' }}>
+                <div className="absolute bottom-3 right-3 text-xs px-2 py-1" style={{ background: 'rgba(34,32,29,0.6)', color: 'rgba(247,245,241,0.8)', fontFamily: 'Inter, sans-serif', borderRadius: 6 }}>
                   {s.dur}
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'rgba(247,245,241,0.2)', backdropFilter: 'blur(8px)' }}>
-                    <div className="w-0 h-0 ml-1" style={{ borderTop: '7px solid transparent', borderBottom: '7px solid transparent', borderLeft: '12px solid #F7F5F1' }} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center transition-transform group-hover:scale-110" style={{ background: 'rgba(247,245,241,0.22)', backdropFilter: 'blur(8px)', border: '1px solid rgba(247,245,241,0.35)' }}>
+                    <div className="w-0 h-0 ml-1" style={{ borderTop: '8px solid transparent', borderBottom: '8px solid transparent', borderLeft: '14px solid #F7F5F1' }} />
                   </div>
                 </div>
               </div>
@@ -916,6 +961,42 @@ function SermonsPage() {
           ))}
         </div>
       </div>
+
+      {/* Video player modal */}
+      {playing && active && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4" style={{ background: 'rgba(34,32,29,0.94)', backdropFilter: 'blur(12px)' }} onClick={() => setPlaying(null)}>
+          <button className="absolute top-5 right-5 w-11 h-11 flex items-center justify-center z-10" style={{ border: '1px solid rgba(247,245,241,0.3)', color: '#F7F5F1', fontSize: 20 }} onClick={() => setPlaying(null)} aria-label={t('sermons.closeVideo')}>✕</button>
+          <div className="w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
+            <div className="glass-photo-frame" style={{ padding: 8 }}>
+              <div className="aspect-video" style={{ borderRadius: 8, overflow: 'hidden' }}>
+                <iframe
+                  src={`https://www.youtube.com/embed/${active.videoId}?autoplay=1&rel=0`}
+                  title={active.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                  style={{ border: 0 }}
+                />
+              </div>
+            </div>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="font-display text-xl font-600" style={{ color: '#F7F5F1' }}>{active.title}</div>
+                <div className="text-xs" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{seriesLabels[active.seriesKey]} · {active.date} · {active.speaker}</div>
+              </div>
+              <a
+                href={`https://www.youtube.com/watch?v=${active.videoId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-5 py-3 text-xs font-semibold uppercase tracking-wider"
+                style={{ border: '1px solid rgba(247,245,241,0.3)', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 44, textDecoration: 'none' }}
+              >
+                {t('sermons.openOnYouTube')}
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="bottom-nav-spacer" />
     </div>
   )
@@ -924,18 +1005,19 @@ function SermonsPage() {
 // ─── PLAN VISIT PAGE ─────────────────────────────────────────────────────────
 
 function PlanVisitPage({ setPage }: { setPage: (p: Page) => void }) {
+  const { t } = useI18n()
   const steps = [
-    { num: '01', title: 'Arrive & Park', body: 'Our car park is open from 7:30 AM. Ushers in blue lanyards will guide you to the best entrance. Boda-boda drop-off is on the Tola Road side.' },
-    { num: '02', title: 'Connect at the Welcome Desk', body: 'Stop by our Welcome Desk in the foyer. Pick up a service programme, connect card, and a gift bag for first-time visitors.' },
-    { num: '03', title: 'Settle In & Worship', body: 'Our services run 90–100 minutes and follow Anglican liturgy — a printed order of service is available. Expect rich congregational singing, a clear Bible message, and Holy Communion.' },
-    { num: '04', title: 'Meet the Team', body: 'After the service, Rev. Mwangi and our Welcome Team host a brief reception in the garden. No pressure — just coffee, chai, and conversation.' },
+    { num: '01', title: t('plan.step1Title'), body: t('plan.step1Body') },
+    { num: '02', title: t('plan.step2Title'), body: t('plan.step2Body') },
+    { num: '03', title: t('plan.step3Title'), body: t('plan.step3Body') },
+    { num: '04', title: t('plan.step4Title'), body: t('plan.step4Body') },
   ]
 
   const faqs = [
-    { q: "What should I wear?", a: "Smart casual is the norm — Sunday best is welcome but not required. Come as you are." },
-    { q: "Is there a children's programme?", a: "Yes. Kids Church (ages 3–12) runs concurrently with both services. Teens (13–17) join the main service and have their own youth group on Friday evenings." },
-    { q: "Are visitors welcome at Communion?", a: "All baptised Christians are welcome at the Lord's Table. If you're not baptised, you are warmly invited to come forward for a blessing." },
-    { q: "Can I give a tithe or offering as a visitor?", a: "The offering basket is passed during the service — giving is entirely optional for guests." },
+    { q: t('plan.faq1q'), a: t('plan.faq1a') },
+    { q: t('plan.faq2q'), a: t('plan.faq2a') },
+    { q: t('plan.faq3q'), a: t('plan.faq3a') },
+    { q: t('plan.faq4q'), a: t('plan.faq4a') },
   ]
 
   return (
@@ -945,25 +1027,26 @@ function PlanVisitPage({ setPage }: { setPage: (p: Page) => void }) {
         className="relative pt-24 pb-20 px-6 md:px-10 overflow-hidden"
         style={{ background: '#22201D' }}
       >
+        <img src="assets/images/logo/ack-crest.png" alt="" aria-hidden="true" className="absolute right-8 top-1/2 -translate-y-1/2 w-24 md:w-40 opacity-25 hidden sm:block" />
         <div className="max-w-screen-xl mx-auto">
           <div className="text-xs uppercase tracking-[0.2em] mb-4" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
-            We'd love to see you
+            {t('plan.eyebrow')}
           </div>
           <h1 className="font-display mb-6" style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 700, lineHeight: 1.0, color: '#F7F5F1', letterSpacing: '-0.02em' }}>
-            Plan Your<br /><em>Visit</em>
+            {t('plan.title')}
           </h1>
           <button
             className="px-8 py-4 font-semibold uppercase tracking-wider text-sm transition-all"
             style={{ background: '#E8A93B', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
           >
-            I'm Coming Sunday →
+            {t('plan.comingSunday')} →
           </button>
           <button
             onClick={() => { setPage('service-times'); window.scrollTo(0, 0) }}
             className="ml-3 px-6 py-4 font-semibold uppercase tracking-wider text-sm"
             style={{ border: '1px solid rgba(247,245,241,0.4)', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
           >
-            Service Times
+            {t('plan.serviceTimes')}
           </button>
         </div>
         {/* Editorial accent */}
@@ -985,7 +1068,7 @@ function PlanVisitPage({ setPage }: { setPage: (p: Page) => void }) {
 
       {/* Steps */}
       <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-16 md:py-24">
-        <SeriesTag label="What to Expect" color="#1B4CE0" />
+        <SeriesTag label={t('plan.whatToExpect')} color="#1B4CE0" />
         <div className="space-y-0">
           {steps.map((s, i) => (
             <div key={s.num} className="grid md:grid-cols-5 gap-6 py-10 glass-light-subtle" style={{ borderTop: '1px solid rgba(184,178,168,0.3)' }}>
@@ -1007,9 +1090,9 @@ function PlanVisitPage({ setPage }: { setPage: (p: Page) => void }) {
       <div className="py-10 px-6 md:px-10" style={{ background: '#22201D' }}>
         <div className="max-w-screen-xl mx-auto grid md:grid-cols-3 gap-4">
           {[
-            { label: 'Dress Code', icon: '✦', detail: 'Smart casual. Come as you are.' },
-            { label: "Kids' Church", icon: '✦', detail: 'Ages 3–12. Trained facilitators. Safe & fun.' },
-            { label: 'Parking', icon: '✦', detail: 'Free on-site parking. Gates open 7:30 AM.' },
+            { label: t('plan.dressCode'), icon: '✦', detail: t('plan.dressDetail') },
+            { label: t('plan.kidsChurch'), icon: '✦', detail: t('plan.kidsDetail') },
+            { label: t('plan.parking'), icon: '✦', detail: t('plan.parkingDetail') },
           ].map((c) => (
             <div
               key={c.label}
@@ -1029,7 +1112,7 @@ function PlanVisitPage({ setPage }: { setPage: (p: Page) => void }) {
 
       {/* FAQ */}
       <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-16 md:py-24 glass-light-subtle">
-        <SeriesTag label="First-Timer FAQ" color="#22201D" />
+        <SeriesTag label={t('plan.faqTitle')} color="#22201D" />
         <div className="space-y-0 max-w-3xl">
           {faqs.map((f, i) => (
             <FaqItem key={i} q={f.q} a={f.a} />
@@ -1066,6 +1149,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 // ─── GIVE PAGE ───────────────────────────────────────────────────────────────
 
 function GivePage() {
+  const { t } = useI18n()
   const [amount, setAmount] = useState('500')
   const [recurring, setRecurring] = useState(false)
   const presets = ['200', '500', '1000', '2500', '5000']
@@ -1084,15 +1168,18 @@ function GivePage() {
           }}
         />
         <div className="relative max-w-screen-xl mx-auto text-center">
+          <div className="w-20 h-20 mx-auto rounded-full overflow-hidden mb-2" style={{ background: '#F7F5F1', border: '1px solid rgba(201,162,75,0.5)', boxShadow: '0 4px 20px rgba(34,32,29,0.3)' }}>
+            <img src="assets/images/logo/ack-crest.png" alt="ACK Berea Church, Tola Parish emblem" className="w-full h-full object-contain" />
+          </div>
           <RegencyDivider />
           <h1 className="font-display mb-4" style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 700, color: '#F7F5F1', letterSpacing: '-0.02em', lineHeight: 1.0 }}>
-            Give Generously
+            {t('give.title')}
           </h1>
           <p className="font-display text-xl italic font-300 max-w-lg mx-auto" style={{ color: 'rgba(247,245,241,0.75)' }}>
-            "Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion, for God loves a cheerful giver."
+            {t('give.quote')}
           </p>
           <div className="text-xs mt-3 uppercase tracking-widest" style={{ color: 'rgba(201,162,75,0.8)', fontFamily: 'Inter, sans-serif' }}>
-            2 Corinthians 9:7
+            {t('give.verse')}
           </div>
           <RegencyDivider />
         </div>
@@ -1103,31 +1190,34 @@ function GivePage() {
         <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-16 grid md:grid-cols-2 gap-12 items-start">
           {/* Form */}
           <div>
-            <h2 className="font-display text-3xl font-600 mb-8" style={{ color: '#22201D' }}>Make a Gift</h2>
+            <h2 className="font-display text-3xl font-600 mb-8" style={{ color: '#22201D' }}>{t('give.makeGift')}</h2>
 
             {/* Recurring toggle */}
             <div className="flex gap-3 mb-8">
-              {['One-time', 'Monthly'].map((t) => (
+              {[
+                { key: 'one', label: t('give.oneTime') },
+                { key: 'monthly', label: t('give.monthly') },
+              ].map((item) => (
                 <button
-                  key={t}
-                  onClick={() => setRecurring(t === 'Monthly')}
+                  key={item.key}
+                  onClick={() => setRecurring(item.key === 'monthly')}
                   className="px-6 py-3 text-sm font-medium uppercase tracking-wider transition-all"
                   style={{
-                    background: (t === 'Monthly') === recurring ? '#1E3A6D' : 'transparent',
-                    color: (t === 'Monthly') === recurring ? '#F7F5F1' : '#22201D',
-                    border: `1px solid ${(t === 'Monthly') === recurring ? '#1E3A6D' : '#B8B2A8'}`,
+                    background: (item.key === 'monthly') === recurring ? '#1E3A6D' : 'transparent',
+                    color: (item.key === 'monthly') === recurring ? '#F7F5F1' : '#22201D',
+                    border: `1px solid ${(item.key === 'monthly') === recurring ? '#1E3A6D' : '#B8B2A8'}`,
                     fontFamily: 'Inter, sans-serif',
                     minHeight: 44,
                   }}
                 >
-                  {t}
+                  {item.label}
                 </button>
               ))}
             </div>
 
             {/* Amount presets */}
             <div className="mb-4">
-              <div className="text-xs uppercase tracking-widest mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Select Amount (KES)</div>
+              <div className="text-xs uppercase tracking-widest mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{t('give.selectAmount')}</div>
               <div className="grid grid-cols-3 md:grid-cols-5 gap-2 mb-4">
                 {presets.map((p) => (
                   <button
@@ -1150,7 +1240,7 @@ function GivePage() {
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder="Other amount"
+                placeholder={t('give.otherAmount')}
                 className="w-full px-4 py-3 text-sm outline-none"
                 style={{ border: '1px solid #B8B2A8', background: '#fff', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
               />
@@ -1159,9 +1249,9 @@ function GivePage() {
             {/* Payment fields */}
             <div className="space-y-3 mb-6">
               {[
-                { label: 'Full Name', type: 'text', placeholder: 'Jane Wanjiku' },
-                { label: 'Email', type: 'email', placeholder: 'jane@example.com' },
-                { label: 'Phone (M-Pesa)', type: 'tel', placeholder: '+254 700 000 000' },
+                { label: t('give.fullName'), type: 'text', placeholder: 'Jane Wanjiku' },
+                { label: t('give.email'), type: 'email', placeholder: 'jane@example.com' },
+                { label: t('give.phone'), type: 'tel', placeholder: '+254 700 000 000' },
               ].map((f) => (
                 <div key={f.label}>
                   <div className="text-xs uppercase tracking-widest mb-1.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{f.label}</div>
@@ -1179,23 +1269,23 @@ function GivePage() {
               className="w-full py-4 font-semibold uppercase tracking-wider text-sm transition-all hover:opacity-90"
               style={{ background: '#0F5C42', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 54 }}
             >
-              Give KES {parseInt(amount || '0').toLocaleString()} via M-Pesa →
+              {t('give.button').replace('{amount}', `KES ${parseInt(amount || '0').toLocaleString()}`)} →
             </button>
 
             <div className="mt-4 flex items-center gap-2">
-              <div className="text-xs" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>🔒 Secure · Encrypted · Trusted by 800+ members</div>
+              <div className="text-xs" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{t('give.secure')}</div>
             </div>
           </div>
 
           {/* Where it goes */}
           <div className="glass-light-subtle p-8">
-            <h3 className="font-display text-2xl font-600 mb-6" style={{ color: '#22201D' }}>Where Gifts Go</h3>
+            <h3 className="font-display text-2xl font-600 mb-6" style={{ color: '#22201D' }}>{t('give.whereGiftsGo')}</h3>
             <div className="space-y-4">
               {[
-                { label: 'Parish Ministry & Worship', pct: 45, color: '#1E3A6D' },
-                { label: 'Community Outreach & Benevolence', pct: 25, color: '#0F5C42' },
-                { label: 'Building & Maintenance', pct: 18, color: '#C9A24B' },
-                { label: 'Diocese Support & Mission', pct: 12, color: '#6B1E2B' },
+                { label: t('give.a1'), pct: 45, color: '#1E3A6D' },
+                { label: t('give.a2'), pct: 25, color: '#0F5C42' },
+                { label: t('give.a3'), pct: 18, color: '#C9A24B' },
+                { label: t('give.a4'), pct: 12, color: '#6B1E2B' },
               ].map((item) => (
                 <div key={item.label}>
                   <div className="flex justify-between mb-1.5">
@@ -1211,9 +1301,9 @@ function GivePage() {
 
             <div className="mt-10 p-6" style={{ background: '#22201D' }}>
               <div className="font-display text-xl italic font-300 mb-3" style={{ color: '#F7F5F1' }}>
-                "Honour the Lord with your wealth, with the firstfruits of all your crops."
+                {t('give.proverbsQuote')}
               </div>
-              <div className="text-xs uppercase tracking-widest" style={{ color: '#C9A24B', fontFamily: 'Inter, sans-serif' }}>Proverbs 3:9</div>
+              <div className="text-xs uppercase tracking-widest" style={{ color: '#C9A24B', fontFamily: 'Inter, sans-serif' }}>{t('give.proverbsVerse')}</div>
             </div>
           </div>
         </div>
@@ -1227,24 +1317,30 @@ function GivePage() {
 // ─── EVENTS PAGE ─────────────────────────────────────────────────────────────
 
 function EventsPage() {
+  const { t } = useI18n()
   const events = [
-    { date: 'Aug 3', day: 'Sun', title: 'Holy Communion Service', time: '8:00 AM & 10:30 AM', tag: 'Worship', color: '#1B4CE0' },
-    { date: 'Aug 6', day: 'Wed', title: 'Bible Study — Hebrews', time: '6:00 PM', tag: 'Study', color: '#0F5C42' },
-    { date: 'Aug 9', day: 'Sat', title: "Mothers' Union Fundraiser", time: '10:00 AM', tag: 'Community', color: '#C4432B' },
-    { date: 'Aug 10', day: 'Sun', title: "Youth Sunday", time: '10:30 AM', tag: 'Youth', color: '#E8A93B' },
-    { date: 'Aug 15', day: 'Fri', title: "Men's Breakfast", time: '7:00 AM', tag: 'Men', color: '#1E3A6D' },
-    { date: 'Aug 17', day: 'Sun', title: 'Confirmation Classes Begin', time: '12:00 PM', tag: 'Formation', color: '#6B1E2B' },
-    { date: 'Aug 23', day: 'Sat', title: 'Community Outreach — Kibera', time: '9:00 AM', tag: 'Outreach', color: '#0F5C42' },
-    { date: 'Aug 31', day: 'Sun', title: 'Parish AGM', time: '12:30 PM', tag: 'Parish', color: '#B8B2A8' },
+    { date: 'Aug 3', day: 'sun', title: t('events.e1'), time: '8:00 AM & 10:30 AM', tag: t('events.tagWorship'), color: '#1B4CE0' },
+    { date: 'Aug 6', day: 'wed', title: t('events.e2'), time: '6:00 PM', tag: t('events.tagStudy'), color: '#0F5C42' },
+    { date: 'Aug 9', day: 'sat', title: t('events.e3'), time: '10:00 AM', tag: t('events.tagCommunity'), color: '#C4432B' },
+    { date: 'Aug 10', day: 'sun', title: t('events.e4'), time: '10:30 AM', tag: t('events.tagYouth'), color: '#E8A93B' },
+    { date: 'Aug 15', day: 'fri', title: t('events.e5'), time: '7:00 AM', tag: t('events.tagMen'), color: '#1E3A6D' },
+    { date: 'Aug 17', day: 'sun', title: t('events.e6'), time: '12:00 PM', tag: t('events.tagFormation'), color: '#6B1E2B' },
+    { date: 'Aug 23', day: 'sat', title: t('events.e7'), time: '9:00 AM', tag: t('events.tagOutreach'), color: '#0F5C42' },
+    { date: 'Aug 31', day: 'sun', title: t('events.e8'), time: '12:30 PM', tag: t('events.tagParish'), color: '#B8B2A8' },
   ]
 
   return (
     <div className="page-fade" style={{ background: '#F7F5F1', minHeight: '100vh' }}>
       <div className="pt-24 pb-16 px-6 md:px-10 max-w-screen-xl mx-auto">
         <div className="flex items-end justify-between mb-8">
-          <div>
-            <div className="text-xs uppercase tracking-[0.2em] mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>August 2025</div>
-            <h1 className="font-display text-4xl md:text-6xl font-700" style={{ color: '#22201D', letterSpacing: '-0.02em' }}>Events</h1>
+          <div className="flex items-end gap-5">
+            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#F7F5F1', border: '1px solid rgba(201,162,75,0.5)', boxShadow: '0 4px 20px rgba(34,32,29,0.12)' }}>
+              <img src="assets/images/logo/ack-crest.png" alt="ACK Berea Church, Tola Parish emblem" className="w-full h-full object-contain" />
+            </div>
+            <div>
+              <div className="text-xs uppercase tracking-[0.2em] mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{t('events.month')}</div>
+              <h1 className="font-display text-4xl md:text-6xl font-700" style={{ color: '#22201D', letterSpacing: '-0.02em' }}>{t('events.title')}</h1>
+            </div>
           </div>
           <div className="font-display text-6xl font-300 italic hidden md:block" style={{ color: '#E8E5E0' }}>08</div>
         </div>
@@ -1258,7 +1354,7 @@ function EventsPage() {
             >
               <div className="flex-shrink-0 w-14 text-center">
                 <div className="text-2xl font-display font-700" style={{ color: '#22201D' }}>{e.date.split(' ')[1]}</div>
-                <div className="text-xs uppercase tracking-wider" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{e.day}</div>
+                <div className="text-xs uppercase tracking-wider" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{t(`day.${e.day}`).slice(0, 3)}</div>
               </div>
               <div className="w-px h-10 flex-shrink-0" style={{ background: e.color }} />
               <div className="flex-1">
@@ -1278,71 +1374,72 @@ function EventsPage() {
 // ─── MINISTRIES PAGE ─────────────────────────────────────────────────────────
 
 function MinistriesPage({ setPage }: { setPage: (p: Page) => void }) {
+  const { t } = useI18n()
   const ministries = [
     {
-      title: 'Youth Ministry',
-      subtitle: 'Ages 13–24 · Fridays & Sundays',
+      title: t('ministries.m1Title'),
+      subtitle: t('ministries.m1Sub'),
       lead: 'Dea. Grace Wanjiku',
       page: 'youth' as Page,
       img: 'assets/images/youth/youth-01.jpg',
       color: '#E8A93B',
-      tag: 'Youth',
-      desc: 'Friday fellowships, camps, mentorship, worship rehearsals, and service projects that help young people grow in faith and friendship.',
+      tag: t('ministries.tagYouth'),
+      desc: t('ministries.m1Desc'),
       featured: true,
     },
     {
-      title: 'Kenya Anglican Men Association (KAMA)',
-      subtitle: 'Men of all ages · Monthly',
+      title: t('ministries.m2Title'),
+      subtitle: t('ministries.m2Sub'),
       lead: 'Bro. Joseph Maina',
       page: 'kama' as Page,
       img: 'assets/images/kama.jpg',
       color: '#1E3A6D',
-      tag: 'KAMA',
-      desc: 'Men grounded in prayer, Bible study, accountability, and servant leadership within the family, church, and community.',
+      tag: t('ministries.tagKAMA'),
+      desc: t('ministries.m2Desc'),
       featured: false,
     },
     {
-      title: "Mothers' Union",
-      subtitle: 'Women of all ages · Wednesdays',
+      title: t('ministries.m3Title'),
+      subtitle: t('ministries.m3Sub'),
       lead: 'Mrs. Ruth Njoroge',
       page: 'mothers-union' as Page,
       img: 'assets/images/mothers-union.jpg',
       color: '#6B1E2B',
-      tag: 'Mothers',
-      desc: 'A worldwide Anglican fellowship of women devoted to prayer, family life, outreach, and the well-being of mothers and children.',
+      tag: t('ministries.tagMothers'),
+      desc: t('ministries.m3Desc'),
       featured: false,
     },
     {
-      title: 'Sunday School Ministry',
-      subtitle: 'Ages 3–12 · Sunday mornings',
+      title: t('ministries.m4Title'),
+      subtitle: t('ministries.m4Sub'),
       lead: 'Sis. Anne Kamau',
       page: 'sunday-school' as Page,
       img: 'assets/images/general/congregation-02.jpg',
       color: '#1B4CE0',
-      tag: 'Kids',
-      desc: 'Safe, joyful, and Bible-centred learning for children every Sunday morning — songs, stories, crafts, and trained facilitators.',
+      tag: t('ministries.tagKids'),
+      desc: t('ministries.m4Desc'),
       featured: false,
     },
     {
-      title: 'Choir & Worship',
-      subtitle: 'All ages · Rehearsals Sat 9 AM',
+      title: t('ministries.m5Title'),
+      subtitle: t('ministries.m5Sub'),
       lead: 'Mr. David Ochieng',
       page: 'ministries' as Page,
       img: 'assets/images/youth/youth-08.jpg',
       color: '#C4432B',
-      tag: 'Worship',
-      desc: 'Lead the congregation in worship each Sunday with voices, instruments, and a heart for excellence.',
+      tag: t('ministries.tagWorship'),
+      desc: t('ministries.m5Desc'),
       featured: false,
     },
     {
-      title: 'Community Outreach',
-      subtitle: 'All members · Monthly',
+      title: t('ministries.m6Title'),
+      subtitle: t('ministries.m6Sub'),
       lead: 'Rev. Samuel Mwangi',
       page: 'ministries' as Page,
       img: 'assets/images/youth/youth-05.jpg',
       color: '#0F5C42',
-      tag: 'Service',
-      desc: 'Kibera visits, food distribution, hospital ministry, and practical compassion to our neighbours in need.',
+      tag: t('ministries.tagService'),
+      desc: t('ministries.m6Desc'),
       featured: false,
     },
   ]
@@ -1353,8 +1450,15 @@ function MinistriesPage({ setPage }: { setPage: (p: Page) => void }) {
   return (
     <div className="page-fade" style={{ background: '#F7F5F1', minHeight: '100vh' }}>
       <div className="pt-24 pb-16 px-6 md:px-10 max-w-screen-xl mx-auto">
-        <div className="text-xs uppercase tracking-[0.2em] mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Find Your Community</div>
-        <h1 className="font-display text-4xl md:text-6xl font-700 mb-10" style={{ color: '#22201D', letterSpacing: '-0.02em' }}>Ministries</h1>
+        <div className="flex items-end gap-5 mb-6">
+          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#F7F5F1', border: '1px solid rgba(201,162,75,0.5)', boxShadow: '0 4px 20px rgba(34,32,29,0.12)' }}>
+            <img src="assets/images/logo/ack-crest.png" alt="ACK Berea Church, Tola Parish emblem" className="w-full h-full object-contain" />
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-[0.2em] mb-1" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{t('ministries.eyebrow')}</div>
+            <h1 className="font-display text-4xl md:text-6xl font-700" style={{ color: '#22201D', letterSpacing: '-0.02em' }}>{t('ministries.title')}</h1>
+          </div>
+        </div>
         <RegencyDivider />
 
         {/* Featured: Youth Ministry — real photos */}
@@ -1372,7 +1476,7 @@ function MinistriesPage({ setPage }: { setPage: (p: Page) => void }) {
               {featured.title}
             </h2>
             <div className="text-sm mb-4" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
-              {featured.subtitle} · Led by {featured.lead}
+              {featured.subtitle} · {t('ministries.ledBy')} {featured.lead}
             </div>
             <p className="text-base leading-relaxed mb-6" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif', maxWidth: '52ch' }}>
               {featured.desc}
@@ -1382,7 +1486,7 @@ function MinistriesPage({ setPage }: { setPage: (p: Page) => void }) {
               className="px-6 py-3 text-sm font-semibold uppercase tracking-wider transition-all hover:opacity-90"
               style={{ background: '#E8A93B', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
             >
-              Explore Youth Ministry →
+              {t('ministries.exploreYouth')} →
             </button>
           </div>
         </div>
@@ -1409,7 +1513,7 @@ function MinistriesPage({ setPage }: { setPage: (p: Page) => void }) {
               </div>
               <div className="p-6">
                 <h3 className="font-display text-xl font-600 mb-1" style={{ color: '#22201D' }}>{m.title}</h3>
-                <div className="text-xs mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{m.subtitle} · Led by {m.lead}</div>
+                <div className="text-xs mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{m.subtitle} · {t('ministries.ledBy')} {m.lead}</div>
                 <p className="text-sm leading-relaxed" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif' }}>{m.desc}</p>
               </div>
             </button>
@@ -1436,9 +1540,14 @@ function MinistryHero({ tag, title, subtitle, color, image, imageAlt }: {
       <div className="absolute inset-0 chromatic-gradient opacity-40" />
       <div className="relative max-w-screen-xl mx-auto px-6 md:px-10 pt-28 pb-12 md:pt-32 md:pb-16">
         <SeriesTag label={tag} color={color} />
-        <h1 className="font-display mt-5 mb-4" style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', fontWeight: 700, lineHeight: 1.0, color: '#F7F5F1', letterSpacing: '-0.02em' }}>
-          {title}
-        </h1>
+        <div className="flex items-center gap-5 mt-5 mb-4">
+          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#F7F5F1', border: '1px solid rgba(201,162,75,0.4)' }}>
+            <img src="assets/images/logo/ack-crest.png" alt="ACK Berea Church, Tola Parish emblem" className="w-full h-full object-contain" />
+          </div>
+          <h1 className="font-display" style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', fontWeight: 700, lineHeight: 1.0, color: '#F7F5F1', letterSpacing: '-0.02em' }}>
+            {title}
+          </h1>
+        </div>
         <p className="font-display text-xl italic font-300 max-w-xl" style={{ color: 'rgba(247,245,241,0.75)' }}>
           {subtitle}
         </p>
@@ -1460,13 +1569,14 @@ function MinistryInfoRow({ label, value }: { label: string; value: string }) {
 }
 
 function MinistryJoinCTA({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
+  const { t } = useI18n()
   return (
     <div className="relative overflow-hidden py-16 md:py-20">
       <div className="absolute inset-0 chromatic-gradient" />
       <div className="relative max-w-screen-xl mx-auto px-6 md:px-10 text-center">
-        <h2 className="font-display text-3xl md:text-4xl font-600 mb-3" style={{ color: '#F7F5F1' }}>Join the Ministry</h2>
+        <h2 className="font-display text-3xl md:text-4xl font-600 mb-3" style={{ color: '#F7F5F1' }}>{t('min.joinTitle')}</h2>
         <p className="text-base mb-8 max-w-md mx-auto" style={{ color: 'rgba(247,245,241,0.7)', fontFamily: 'Inter, sans-serif' }}>
-          We'd love to walk with you. Reach out to the ministry lead or stop by after a Sunday service.
+          {t('min.joinBody')}
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
@@ -1474,14 +1584,14 @@ function MinistryJoinCTA({ page, setPage }: { page: Page; setPage: (p: Page) => 
             className="px-7 py-4 text-sm font-semibold uppercase tracking-wider"
             style={{ background: '#F7F5F1', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
           >
-            Contact Us
+            {t('min.contactUs')}
           </button>
           <button
             onClick={() => { setPage('plan-visit'); window.scrollTo(0, 0) }}
             className="px-7 py-4 text-sm font-semibold uppercase tracking-wider"
             style={{ border: '1px solid rgba(247,245,241,0.4)', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
           >
-            Plan Your Visit
+            {t('min.planVisit')}
           </button>
         </div>
       </div>
@@ -1490,6 +1600,7 @@ function MinistryJoinCTA({ page, setPage }: { page: Page; setPage: (p: Page) => 
 }
 
 function YouthPage({ setPage }: { setPage: (p: Page) => void }) {
+  const { t } = useI18n()
   const activities = [
     { img: 'assets/images/youth/youth-01.jpg', alt: 'Youth group gathered for a Saturday worship rehearsal' },
     { img: 'assets/images/youth/youth-03.jpg', alt: 'Young people singing together during fellowship' },
@@ -1504,9 +1615,9 @@ function YouthPage({ setPage }: { setPage: (p: Page) => void }) {
   return (
     <div className="page-fade" style={{ background: '#F7F5F1', minHeight: '100vh' }}>
       <MinistryHero
-        tag="Youth Ministry"
-        title="Growing Young in Faith"
-        subtitle="Friday fellowships, Sunday worship, camps, and service — a community where young people belong, grow, and lead."
+        tag={t('youth.tag')}
+        title={t('youth.title')}
+        subtitle={t('youth.subtitle')}
         color="#E8A93B"
         image="assets/images/youth/youth-01.jpg"
         imageAlt="Youth ministry group during a Saturday worship rehearsal at ACK Berea Church"
@@ -1515,22 +1626,22 @@ function YouthPage({ setPage }: { setPage: (p: Page) => void }) {
       <div className="max-w-screen-xl mx-auto px-6 md:px-10 pt-20 pb-10">
         <div className="grid md:grid-cols-2 gap-12 items-start">
           <div>
-            <h2 className="font-display text-3xl font-600 mb-5" style={{ color: '#22201D' }}>About the Youth Ministry</h2>
+            <h2 className="font-display text-3xl font-600 mb-5" style={{ color: '#22201D' }}>{t('youth.aboutTitle')}</h2>
             <p className="text-base leading-relaxed mb-4" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif', maxWidth: '56ch' }}>
-              The Youth Ministry at ACK Berea Church welcomes young people aged 13–24 into a vibrant, Christ-centred community. Through Friday fellowships, worship team participation, camps, mentorship, and service projects, our youth grow in their walk with God and in friendship with one another.
+              {t('youth.p1')}
             </p>
             <p className="text-base leading-relaxed" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif', maxWidth: '56ch' }}>
-              Our vision is to see every young person know Jesus, discover their gifts, and serve boldly in the church and community.
+              {t('youth.p2')}
             </p>
           </div>
           <div className="glass-light-subtle p-8">
-            <h3 className="font-display text-xl font-600 mb-6" style={{ color: '#22201D' }}>Meeting Times</h3>
-            <MinistryInfoRow label="Friday Fellowship" value="6:00 PM – 8:00 PM · Parish Hall" />
-            <MinistryInfoRow label="Sunday Worship" value="8:00 AM & 10:30 AM · Main Sanctuary" />
-            <MinistryInfoRow label="Worship Rehearsal" value="Saturday · 9:00 AM · Choir Room" />
-            <MinistryInfoRow label="Youth Group (13–17)" value="Friday Evenings · Youth Room" />
-            <MinistryInfoRow label="Led By" value="Dea. Grace Wanjiku" />
-            <MinistryInfoRow label="Next Camp" value="August 2025 · Lake Naivasha" />
+            <h3 className="font-display text-xl font-600 mb-6" style={{ color: '#22201D' }}>{t('min.meetingTimes')}</h3>
+            <MinistryInfoRow label={t('youth.row1Label')} value={t('youth.row1Value')} />
+            <MinistryInfoRow label={t('youth.row2Label')} value={t('youth.row2Value')} />
+            <MinistryInfoRow label={t('youth.row3Label')} value={t('youth.row3Value')} />
+            <MinistryInfoRow label={t('youth.row4Label')} value={t('youth.row4Value')} />
+            <MinistryInfoRow label={t('youth.row5Label')} value={t('youth.row5Value')} />
+            <MinistryInfoRow label={t('youth.row6Label')} value={t('youth.row6Value')} />
           </div>
         </div>
       </div>
@@ -1547,12 +1658,12 @@ function YouthPage({ setPage }: { setPage: (p: Page) => void }) {
           </div>
           <div>
             <span className="regency-rule block mb-5" style={{ borderColor: '#E8A93B' }} />
-            <h2 className="font-display text-3xl md:text-4xl font-600 mb-5" style={{ color: '#22201D' }}>KAYO: Kenya Anglican Youth Organisation</h2>
+            <h2 className="font-display text-3xl md:text-4xl font-600 mb-5" style={{ color: '#22201D' }}>{t('youth.kayoTitle')}</h2>
             <p className="text-base leading-relaxed mb-4" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif', maxWidth: '56ch' }}>
-              As part of the nationwide KAYO movement, our youth join diocesan and national rallies, leadership camps, and mission weeks alongside other young Anglicans from across Kenya.
+              {t('youth.kayoP1')}
             </p>
             <p className="text-base leading-relaxed" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif', maxWidth: '56ch' }}>
-              Being a KAYO member means belonging to something bigger — learning from peer leaders, serving in mission, and carrying the Gospel into schools, campuses, and communities.
+              {t('youth.kayoP2')}
             </p>
           </div>
         </div>
@@ -1560,7 +1671,7 @@ function YouthPage({ setPage }: { setPage: (p: Page) => void }) {
 
       <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-10">
         <div className="flex items-end justify-between mb-8">
-          <h2 className="font-display text-3xl md:text-4xl font-600" style={{ color: '#22201D' }}>In the Life of Youth Ministry</h2>
+          <h2 className="font-display text-3xl md:text-4xl font-600" style={{ color: '#22201D' }}>{t('youth.galleryTitle')}</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {activities.map((a, i) => (
@@ -1578,19 +1689,20 @@ function YouthPage({ setPage }: { setPage: (p: Page) => void }) {
 }
 
 function KAMAPage({ setPage }: { setPage: (p: Page) => void }) {
+  const { t } = useI18n()
   const pillars = [
-    { num: '01', title: 'Prayer & Bible Study', body: 'Men gathered around the Word — monthly fellowship breakfasts and small accountability groups.' },
-    { num: '02', title: 'Servant Leadership', body: 'Leading families, church, and community with integrity, gentleness, and strength.' },
-    { num: '03', title: 'Fellowship & Support', body: 'Walking together through life — celebrating joys, carrying burdens, and mentoring younger men.' },
-    { num: '04', title: 'Community Service', body: 'Serving the parish and neighbourhood through projects, security, and practical help.' },
+    { num: '01', title: t('kama.p1Title'), body: t('kama.p1Body') },
+    { num: '02', title: t('kama.p2Title'), body: t('kama.p2Body') },
+    { num: '03', title: t('kama.p3Title'), body: t('kama.p3Body') },
+    { num: '04', title: t('kama.p4Title'), body: t('kama.p4Body') },
   ]
 
   return (
     <div className="page-fade" style={{ background: '#F7F5F1', minHeight: '100vh' }}>
       <MinistryHero
-        tag="KAMA"
-        title="Kenya Anglican Men Association"
-        subtitle="Men of ACK Berea — rooted in Scripture, active in service, and committed to faithful leadership at home, church, and community."
+        tag={t('kama.tag')}
+        title={t('kama.title')}
+        subtitle={t('kama.subtitle')}
         color="#1E3A6D"
         image="assets/images/kama.jpg"
         imageAlt="Men of the Kenya Anglican Men Association at ACK Berea Church"
@@ -1599,26 +1711,26 @@ function KAMAPage({ setPage }: { setPage: (p: Page) => void }) {
       <div className="max-w-screen-xl mx-auto px-6 md:px-10 pt-20 pb-10">
         <div className="grid md:grid-cols-2 gap-12 items-start">
           <div>
-            <h2 className="font-display text-3xl font-600 mb-5" style={{ color: '#22201D' }}>Men Discipling Men</h2>
+            <h2 className="font-display text-3xl font-600 mb-5" style={{ color: '#22201D' }}>{t('kama.aboutTitle')}</h2>
             <p className="text-base leading-relaxed mb-4" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif', maxWidth: '56ch' }}>
-              KAMA (Kenya Anglican Men Association) is the men's wing of the Anglican Church of Kenya. At Berea Parish, we meet regularly for prayer, Bible study, and fellowship — growing together as godly husbands, fathers, and servant leaders.
+              {t('kama.p1')}
             </p>
             <p className="text-base leading-relaxed" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif', maxWidth: '56ch' }}>
-              Whether you are a long-time member or new to the parish, you are welcome to join the brotherhood.
+              {t('kama.p2')}
             </p>
           </div>
           <div className="glass-light-subtle p-8">
-            <h3 className="font-display text-xl font-600 mb-6" style={{ color: '#22201D' }}>Meeting Times</h3>
-            <MinistryInfoRow label="Monthly Breakfast" value="First Saturday · 7:00 AM · Parish Hall" />
-            <MinistryInfoRow label="Men's Fellowship" value="Monthly · Saturday · 10:00 AM" />
-            <MinistryInfoRow label="Sunday Services" value="8:00 AM & 10:30 AM · Main Sanctuary" />
-            <MinistryInfoRow label="Led By" value="Bro. Joseph Maina" />
+            <h3 className="font-display text-xl font-600 mb-6" style={{ color: '#22201D' }}>{t('min.meetingTimes')}</h3>
+            <MinistryInfoRow label={t('kama.row1Label')} value={t('kama.row1Value')} />
+            <MinistryInfoRow label={t('kama.row2Label')} value={t('kama.row2Value')} />
+            <MinistryInfoRow label={t('kama.row3Label')} value={t('kama.row3Value')} />
+            <MinistryInfoRow label={t('kama.row4Label')} value={t('kama.row4Value')} />
           </div>
         </div>
       </div>
 
       <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-10">
-        <h2 className="font-display text-3xl md:text-4xl font-600 mb-10" style={{ color: '#22201D' }}>Our Four Pillars</h2>
+        <h2 className="font-display text-3xl md:text-4xl font-600 mb-10" style={{ color: '#22201D' }}>{t('kama.pillarsTitle')}</h2>
         <div className="space-y-0">
           {pillars.map((p, i) => (
             <div key={p.num} className="grid md:grid-cols-5 gap-6 py-10 glass-light-subtle" style={{ borderTop: '1px solid rgba(184,178,168,0.3)' }}>
@@ -1643,19 +1755,20 @@ function KAMAPage({ setPage }: { setPage: (p: Page) => void }) {
 }
 
 function MothersUnionPage({ setPage }: { setPage: (p: Page) => void }) {
+  const { t } = useI18n()
   const focuses = [
-    { title: 'Prayer', body: 'A prayerful fellowship lifting up families, the church, and the nation.' },
-    { title: 'Family Life', body: 'Nurturing Christian homes and supporting mothers and children.' },
-    { title: 'Outreach', body: 'Serving widows, orphans, and vulnerable families in our community.' },
-    { title: 'Community', body: 'A warm sisterhood of women walking together in every season of life.' },
+    { title: t('mu.f1Title'), body: t('mu.f1Body') },
+    { title: t('mu.f2Title'), body: t('mu.f2Body') },
+    { title: t('mu.f3Title'), body: t('mu.f3Body') },
+    { title: t('mu.f4Title'), body: t('mu.f4Body') },
   ]
 
   return (
     <div className="page-fade" style={{ background: '#F7F5F1', minHeight: '100vh' }}>
       <MinistryHero
-        tag="Mothers' Union"
-        title="The Mothers' Union"
-        subtitle="A worldwide Anglican fellowship of women devoted to prayer, family life, and care for mothers and children."
+        tag={t('mu.tag')}
+        title={t('mu.title')}
+        subtitle={t('mu.subtitle')}
         color="#6B1E2B"
         image="assets/images/mothers-union.jpg"
         imageAlt="Mothers' Union members in worship at ACK Berea Church"
@@ -1664,26 +1777,26 @@ function MothersUnionPage({ setPage }: { setPage: (p: Page) => void }) {
       <div className="max-w-screen-xl mx-auto px-6 md:px-10 pt-20 pb-10">
         <div className="grid md:grid-cols-2 gap-12 items-start">
           <div>
-            <h2 className="font-display text-3xl font-600 mb-5" style={{ color: '#22201D' }}>Serving with Love</h2>
+            <h2 className="font-display text-3xl font-600 mb-5" style={{ color: '#22201D' }}>{t('mu.aboutTitle')}</h2>
             <p className="text-base leading-relaxed mb-4" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif', maxWidth: '56ch' }}>
-              The Mothers' Union at ACK Berea Church is part of an international Christian fellowship that has supported family life for over a century. Our members gather in prayer, grow in faith, and serve families in the parish and beyond.
+              {t('mu.p1')}
             </p>
             <p className="text-base leading-relaxed" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif', maxWidth: '56ch' }}>
-              All women of the parish — mothers, grandmothers, and women at every stage of life — are warmly welcome.
+              {t('mu.p2')}
             </p>
           </div>
           <div className="glass-light-subtle p-8">
-            <h3 className="font-display text-xl font-600 mb-6" style={{ color: '#22201D' }}>Meeting Times</h3>
-            <MinistryInfoRow label="MU Fellowship" value="Wednesday · 10:00 AM · Parish Hall" />
-            <MinistryInfoRow label="Mothers' Prayer" value="Wednesday · 11:00 AM" />
-            <MinistryInfoRow label="Fundraisers & Events" value="Monthly · Check Events Page" />
-            <MinistryInfoRow label="Led By" value="Mrs. Ruth Njoroge" />
+            <h3 className="font-display text-xl font-600 mb-6" style={{ color: '#22201D' }}>{t('min.meetingTimes')}</h3>
+            <MinistryInfoRow label={t('mu.row1Label')} value={t('mu.row1Value')} />
+            <MinistryInfoRow label={t('mu.row2Label')} value={t('mu.row2Value')} />
+            <MinistryInfoRow label={t('mu.row3Label')} value={t('mu.row3Value')} />
+            <MinistryInfoRow label={t('mu.row4Label')} value={t('mu.row4Value')} />
           </div>
         </div>
       </div>
 
       <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-10">
-        <h2 className="font-display text-3xl md:text-4xl font-600 mb-10" style={{ color: '#22201D' }}>What We Do</h2>
+        <h2 className="font-display text-3xl md:text-4xl font-600 mb-10" style={{ color: '#22201D' }}>{t('mu.whatWeDo')}</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           {focuses.map((f) => (
             <div key={f.title} className="glass-light-subtle p-8">
@@ -1781,6 +1894,7 @@ function ServiceTimesPage() {
       {/* Hero */}
       <div className="relative pt-24 pb-16 px-6 md:px-10 overflow-hidden" style={{ background: '#22201D' }}>
         <div className="absolute inset-0 chromatic-gradient opacity-30" />
+        <img src="assets/images/logo/ack-crest.png" alt="" aria-hidden="true" className="absolute right-8 top-1/2 -translate-y-1/2 w-24 md:w-40 opacity-25 hidden sm:block" />
         <div className="relative max-w-screen-xl mx-auto">
           <div className="text-xs uppercase tracking-[0.2em] mb-4" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
             Come and worship with us
@@ -1877,6 +1991,7 @@ function LeadershipPage({ setPage }: { setPage: (p: Page) => void }) {
       {/* Hero */}
       <div className="relative pt-24 pb-20 px-6 md:px-10 overflow-hidden" style={{ background: '#0F5C42' }}>
         <div className="absolute inset-0 chromatic-gradient opacity-20" />
+        <img src="assets/images/logo/ack-crest.png" alt="" aria-hidden="true" className="absolute right-8 top-1/2 -translate-y-1/2 w-24 md:w-40 opacity-25 hidden sm:block" />
         <div className="relative max-w-screen-xl mx-auto text-center">
           <div className="text-xs uppercase tracking-[0.2em] mb-4" style={{ color: 'rgba(247,245,241,0.7)', fontFamily: 'Inter, sans-serif' }}>
             Those who lead us in faith
@@ -1999,6 +2114,7 @@ function GetInvolvedPage() {
       {/* Hero */}
       <div className="relative pt-24 pb-16 px-6 md:px-10 overflow-hidden" style={{ background: '#22201D' }}>
         <div className="absolute inset-0 chromatic-gradient opacity-30" />
+        <img src="assets/images/logo/ack-crest.png" alt="" aria-hidden="true" className="absolute right-8 top-1/2 -translate-y-1/2 w-24 md:w-40 opacity-25 hidden sm:block" />
         <div className="relative max-w-screen-xl mx-auto">
           <div className="text-xs uppercase tracking-[0.2em] mb-4" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
             Everyone has a place
@@ -2095,6 +2211,9 @@ function PrayerRequestsPage() {
       <div className="relative max-w-screen-xl mx-auto px-6 md:px-10 pt-24 pb-16">
         <div className="grid md:grid-cols-2 gap-12 items-start">
           <div className="pt-6">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden mb-5" style={{ background: '#F7F5F1', border: '1px solid rgba(201,162,75,0.5)', boxShadow: '0 4px 20px rgba(34,32,29,0.12)' }}>
+              <img src="assets/images/logo/ack-crest.png" alt="ACK Berea Church, Tola Parish emblem" className="w-full h-full object-contain" />
+            </div>
             <div className="text-xs uppercase tracking-[0.2em] mb-4" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
               We pray with you
             </div>
@@ -2172,8 +2291,15 @@ function NewsPage() {
     <div className="page-fade" style={{ background: '#F7F5F1', minHeight: '100vh' }}>
       {/* Header */}
       <div className="pt-24 pb-12 px-6 md:px-10 max-w-screen-xl mx-auto">
-        <div className="text-xs uppercase tracking-[0.2em] mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Stories from Tola Parish</div>
-        <h1 className="font-display text-4xl md:text-6xl font-700" style={{ color: '#22201D', letterSpacing: '-0.02em' }}>News</h1>
+        <div className="flex items-end gap-5 mb-3">
+          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#F7F5F1', border: '1px solid rgba(201,162,75,0.5)', boxShadow: '0 4px 20px rgba(34,32,29,0.12)' }}>
+            <img src="assets/images/logo/ack-crest.png" alt="ACK Berea Church, Tola Parish emblem" className="w-full h-full object-contain" />
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-[0.2em] mb-1" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Stories from Tola Parish</div>
+            <h1 className="font-display text-4xl md:text-6xl font-700" style={{ color: '#22201D', letterSpacing: '-0.02em' }}>News</h1>
+          </div>
+        </div>
       </div>
 
       {/* Featured story */}
@@ -2252,8 +2378,15 @@ function GalleryPage() {
   return (
     <div className="page-fade" style={{ background: '#F7F5F1', minHeight: '100vh' }}>
       <div className="pt-24 pb-12 px-6 md:px-10 max-w-screen-xl mx-auto">
-        <div className="text-xs uppercase tracking-[0.2em] mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Moments from the parish</div>
-        <h1 className="font-display text-4xl md:text-6xl font-700 mb-4" style={{ color: '#22201D', letterSpacing: '-0.02em' }}>Gallery</h1>
+        <div className="flex items-end gap-5 mb-4">
+          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#F7F5F1', border: '1px solid rgba(201,162,75,0.5)', boxShadow: '0 4px 20px rgba(34,32,29,0.12)' }}>
+            <img src="assets/images/logo/ack-crest.png" alt="ACK Berea Church, Tola Parish emblem" className="w-full h-full object-contain" />
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-[0.2em] mb-1" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Moments from the parish</div>
+            <h1 className="font-display text-4xl md:text-6xl font-700" style={{ color: '#22201D', letterSpacing: '-0.02em' }}>Gallery</h1>
+          </div>
+        </div>
         <p className="text-base" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif' }}>Tap any photo to view it full-screen.</p>
       </div>
 
@@ -2318,6 +2451,7 @@ function FAQPage({ setPage }: { setPage: (p: Page) => void }) {
   return (
     <div className="page-fade" style={{ background: '#F7F5F1', minHeight: '100vh' }}>
       <div className="relative pt-24 pb-16 px-6 md:px-10 overflow-hidden" style={{ background: '#22201D' }}>
+        <img src="assets/images/logo/ack-crest.png" alt="" aria-hidden="true" className="absolute right-8 top-1/2 -translate-y-1/2 w-24 md:w-40 opacity-25 hidden sm:block" />
         <div className="max-w-screen-xl mx-auto">
           <div className="text-xs uppercase tracking-[0.2em] mb-4" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
             Good questions, honest answers
@@ -2388,8 +2522,15 @@ function SmallGroupsFinderPage() {
   return (
     <div className="page-fade" style={{ background: '#F7F5F1', minHeight: '100vh' }}>
       <div className="pt-24 pb-12 px-6 md:px-10 max-w-screen-xl mx-auto">
-        <div className="text-xs uppercase tracking-[0.2em] mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Find your people</div>
-        <h1 className="font-display text-4xl md:text-6xl font-700 mb-6" style={{ color: '#22201D', letterSpacing: '-0.02em' }}>Small Groups</h1>
+        <div className="flex items-end gap-5">
+          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#F7F5F1', border: '1px solid rgba(201,162,75,0.5)', boxShadow: '0 4px 20px rgba(34,32,29,0.12)' }}>
+            <img src="assets/images/logo/ack-crest.png" alt="ACK Berea Church, Tola Parish emblem" className="w-full h-full object-contain" />
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-[0.2em] mb-1" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Find your people</div>
+            <h1 className="font-display text-4xl md:text-6xl font-700" style={{ color: '#22201D', letterSpacing: '-0.02em' }}>Small Groups</h1>
+          </div>
+        </div>
 
         {/* Search */}
         <input
@@ -2462,6 +2603,7 @@ function LiveStreamPage() {
       {/* Header */}
       <div className="relative pt-24 pb-8 px-6 md:px-10 overflow-hidden">
         <div className="absolute inset-0 chromatic-gradient opacity-30" />
+        <img src="assets/images/logo/ack-crest.png" alt="" aria-hidden="true" className="absolute right-8 top-1/2 -translate-y-1/2 w-24 md:w-40 opacity-25 hidden sm:block" />
         <div className="relative max-w-screen-xl mx-auto flex flex-wrap items-end justify-between gap-4">
           <div>
             <div className="text-xs uppercase tracking-[0.2em] mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Join us from anywhere</div>
@@ -2588,8 +2730,15 @@ function TestimoniesPage() {
   return (
     <div className="page-fade" style={{ background: '#F7F5F1', minHeight: '100vh' }}>
       <div className="pt-24 pb-12 px-6 md:px-10 max-w-screen-xl mx-auto">
-        <div className="text-xs uppercase tracking-[0.2em] mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Stories of grace</div>
-        <h1 className="font-display text-4xl md:text-6xl font-700" style={{ color: '#22201D', letterSpacing: '-0.02em' }}>Testimonies</h1>
+        <div className="flex items-end gap-5">
+          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#F7F5F1', border: '1px solid rgba(201,162,75,0.5)', boxShadow: '0 4px 20px rgba(34,32,29,0.12)' }}>
+            <img src="assets/images/logo/ack-crest.png" alt="ACK Berea Church, Tola Parish emblem" className="w-full h-full object-contain" />
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-[0.2em] mb-1" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Stories of grace</div>
+            <h1 className="font-display text-4xl md:text-6xl font-700" style={{ color: '#22201D', letterSpacing: '-0.02em' }}>Testimonies</h1>
+          </div>
+        </div>
       </div>
 
       {/* Portrait-led feature */}
@@ -2657,8 +2806,15 @@ function ContactPage({ setPage }: { setPage: (p: Page) => void }) {
   return (
     <div className="page-fade" style={{ background: '#F7F5F1', minHeight: '100vh' }}>
       <div className="pt-24 pb-16 px-6 md:px-10 max-w-screen-xl mx-auto">
-        <div className="text-xs uppercase tracking-[0.2em] mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Get in Touch</div>
-        <h1 className="font-display text-4xl md:text-6xl font-700 mb-10" style={{ color: '#22201D', letterSpacing: '-0.02em' }}>Contact</h1>
+        <div className="flex items-end gap-5 mb-6">
+          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#F7F5F1', border: '1px solid rgba(201,162,75,0.5)', boxShadow: '0 4px 20px rgba(34,32,29,0.12)' }}>
+            <img src="assets/images/logo/ack-crest.png" alt="ACK Berea Church, Tola Parish emblem" className="w-full h-full object-contain" />
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-[0.2em] mb-1" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Get in Touch</div>
+            <h1 className="font-display text-4xl md:text-6xl font-700" style={{ color: '#22201D', letterSpacing: '-0.02em' }}>Contact</h1>
+          </div>
+        </div>
         <RegencyDivider />
 
         <div className="flex flex-wrap gap-3 mb-10">
@@ -2758,6 +2914,7 @@ function ContactPage({ setPage }: { setPage: (p: Page) => void }) {
 // ─── FOOTER ──────────────────────────────────────────────────────────────────
 
 function Footer({ setPage }: { setPage: (p: Page) => void }) {
+  const { t } = useI18n()
   return (
     <footer style={{ background: '#22201D', borderTop: '1px solid rgba(184,178,168,0.1)' }}>
       <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-12 md:py-16">
@@ -2765,33 +2922,38 @@ function Footer({ setPage }: { setPage: (p: Page) => void }) {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 relative flex-shrink-0">
-                <div className="absolute inset-0 rounded-full border-2" style={{ borderColor: '#F7F5F1' }} />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3"
-                  style={{ background: '#F7F5F1', clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }} />
+              <div className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#F7F5F1', border: '1px solid rgba(201,162,75,0.4)' }}>
+                <img src="assets/images/logo/ack-crest.png" alt="ACK Berea Church, Tola Parish emblem" className="w-full h-full object-contain" />
               </div>
               <div>
-                <div className="font-display text-base font-600" style={{ color: '#F7F5F1' }}>ACK Berea Church</div>
-                <div className="text-xs uppercase tracking-wider" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Tola Parish</div>
+                <div className="font-display text-base font-600" style={{ color: '#F7F5F1' }}>{t('nav.churchName')}</div>
+                <div className="text-xs uppercase tracking-wider" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{t('nav.tolaParish')}</div>
               </div>
             </div>
             <p className="text-sm leading-relaxed mb-4" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif', maxWidth: '36ch' }}>
-              Part of the Anglican Church of Kenya, Diocese of Mount Kenya South. Rooted in Scripture, committed to community.
+              {t('footer.tagline')}
             </p>
             <div className="text-xs" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
-              Tola Road, Berea, Nairobi, Kenya<br />+254 20 123 4567
+              {t('footer.address')}<br />{t('footer.phone')}
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <div className="text-xs uppercase tracking-widest mb-5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Navigate</div>
+            <div className="text-xs uppercase tracking-widest mb-5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{t('footer.navigate')}</div>
             <div className="space-y-3">
-              {(['about', 'sermons', 'events', 'ministries', 'give', 'contact'] as Page[]).map((p) => (
+              {([
+                [t('nav.about'), 'about'],
+                [t('nav.sermons'), 'sermons'],
+                [t('nav.events'), 'events'],
+                [t('nav.ministries'), 'ministries'],
+                [t('nav.give'), 'give'],
+                [t('nav.contact'), 'contact'],
+              ] as [string, Page][]).map(([label, p]) => (
                 <button key={p} onClick={() => { setPage(p); window.scrollTo(0, 0) }}
-                  className="block text-sm capitalize hover:opacity-60 transition-opacity text-left"
+                  className="block text-sm hover:opacity-60 transition-opacity text-left"
                   style={{ color: '#F7F5F1', fontFamily: 'Inter, sans-serif' }}>
-                  {p.replace('-', ' ')}
+                  {label}
                 </button>
               ))}
             </div>
@@ -2799,9 +2961,14 @@ function Footer({ setPage }: { setPage: (p: Page) => void }) {
 
           {/* Ministries */}
           <div>
-            <div className="text-xs uppercase tracking-widest mb-5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Ministries</div>
+            <div className="text-xs uppercase tracking-widest mb-5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{t('footer.ministries')}</div>
             <div className="space-y-3">
-              {([['Youth', 'youth'], ['KAMA', 'kama'], ["Mothers' Union", 'mothers-union'], ['Sunday School', 'sunday-school']] as [string, Page][]).map(([label, p]) => (
+              {([
+                [t('menu.youth'), 'youth'],
+                [t('menu.kama'), 'kama'],
+                [t('menu.mothersUnion'), 'mothers-union'],
+                [t('menu.sundaySchool'), 'sunday-school'],
+              ] as [string, Page][]).map(([label, p]) => (
                 <button key={p} onClick={() => { setPage(p); window.scrollTo(0, 0) }}
                   className="block text-sm hover:opacity-60 transition-opacity text-left"
                   style={{ color: '#F7F5F1', fontFamily: 'Inter, sans-serif' }}>
@@ -2813,29 +2980,29 @@ function Footer({ setPage }: { setPage: (p: Page) => void }) {
 
           {/* Services */}
           <div>
-            <div className="text-xs uppercase tracking-widest mb-5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Services</div>
+            <div className="text-xs uppercase tracking-widest mb-5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{t('footer.services')}</div>
             <div className="space-y-3 text-sm" style={{ color: '#F7F5F1', fontFamily: 'Inter, sans-serif' }}>
-              <div>Sunday <span style={{ color: '#B8B2A8' }}>8:00 AM</span></div>
-              <div>Sunday <span style={{ color: '#B8B2A8' }}>10:30 AM</span></div>
-              <div>Wednesday <span style={{ color: '#B8B2A8' }}>6:00 PM</span></div>
+              <div>{t('day.sun')} <span style={{ color: '#B8B2A8' }}>8:00 AM</span></div>
+              <div>{t('day.sun')} <span style={{ color: '#B8B2A8' }}>10:30 AM</span></div>
+              <div>{t('day.wed')} <span style={{ color: '#B8B2A8' }}>6:00 PM</span></div>
             </div>
           </div>
 
           {/* More */}
           <div>
-            <div className="text-xs uppercase tracking-widest mb-5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>More</div>
+            <div className="text-xs uppercase tracking-widest mb-5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{t('footer.more')}</div>
             <div className="space-y-3">
               {([
-                ['Service Times', 'service-times'],
-                ['Leadership', 'leadership'],
-                ['Get Involved', 'get-involved'],
-                ['Prayer Requests', 'prayer-requests'],
-                ['News', 'news'],
-                ['Gallery', 'gallery'],
-                ['Small Groups', 'small-groups'],
-                ['Live Stream', 'live'],
-                ['Testimonies', 'testimonies'],
-                ['FAQ', 'faq'],
+                [t('menu.serviceTimes'), 'service-times'],
+                [t('menu.leadership'), 'leadership'],
+                [t('menu.getInvolved'), 'get-involved'],
+                [t('menu.prayerRequests'), 'prayer-requests'],
+                [t('menu.news'), 'news'],
+                [t('menu.gallery'), 'gallery'],
+                [t('menu.smallGroups'), 'small-groups'],
+                [t('menu.liveStream'), 'live'],
+                [t('menu.testimonies'), 'testimonies'],
+                [t('menu.faq'), 'faq'],
               ] as [string, Page][]).map(([label, p]) => (
                 <button key={p} onClick={() => { setPage(p); window.scrollTo(0, 0) }}
                   className="block text-sm hover:opacity-60 transition-opacity text-left"
@@ -2849,7 +3016,7 @@ function Footer({ setPage }: { setPage: (p: Page) => void }) {
 
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4" style={{ borderTop: '1px solid rgba(184,178,168,0.1)' }}>
           <div className="text-xs" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
-            © 2025 ACK Berea Church, Tola Parish. All rights reserved.
+            {t('footer.copyright')}
           </div>
           <div className="flex gap-4">
             {['#', '#', '#'].map((_, i) => (
