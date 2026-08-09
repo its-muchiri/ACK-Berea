@@ -841,6 +841,7 @@ function SermonsPage() {
   const [playing, setPlaying] = useState<string | null>(null)
   const series = [
     { key: 'all', label: t('sermons.all') },
+    { key: 'general', label: 'General' },
     { key: 'john', label: t('sermons.seriesJohn') },
     { key: 'hebrews', label: t('sermons.seriesHebrews') },
     { key: 'psalms', label: t('sermons.seriesPsalms') },
@@ -848,6 +849,7 @@ function SermonsPage() {
   ]
 
   const seriesLabels: Record<string, string> = {
+    general: 'General',
     john: t('sermons.seriesJohn'),
     hebrews: t('sermons.seriesHebrews'),
     psalms: t('sermons.seriesPsalms'),
@@ -855,11 +857,12 @@ function SermonsPage() {
   }
 
   const sermons = [
-    { title: t('sermons.s1'), seriesKey: 'john', date: 'Jul 27, 2025', speaker: 'Rev. Samuel Mwangi', dur: '42 min', color: '#1B4CE0', videoId: 'OG5cJPkowBw' },
-    { title: t('sermons.s2'), seriesKey: 'hebrews', date: 'Jul 20, 2025', speaker: 'Rev. Samuel Mwangi', dur: '38 min', color: '#0F5C42', videoId: 'To60RJEDjd0' },
-    { title: t('sermons.s3'), seriesKey: 'john', date: 'Jul 13, 2025', speaker: 'Deacon Grace Wanjiku', dur: '45 min', color: '#6B1E2B', videoId: 'tyE-NFpAq3Y' },
-    { title: t('sermons.s4'), seriesKey: 'psalms', date: 'Jul 6, 2025', speaker: 'Rev. Samuel Mwangi', dur: '36 min', color: '#E8A93B', videoId: '1GIhgJZmjuM' },
-    { title: t('sermons.s5'), seriesKey: 'romans', date: 'Jun 29, 2025', speaker: 'Ven. Peter Kamau', dur: '48 min', color: '#C4432B', videoId: 'A2Q7gDSyJCk' },
+    { title: 'Effective Prayer', seriesKey: 'general', date: 'Nov 3, 2024', speaker: 'ACK', dur: '55 min', color: '#1E3A6D', videoId: '-ULy3PA14Gk' },
+    { title: 'Second Sunday Before Advent — Sermon by Ev. Elvis', seriesKey: 'general', date: 'Nov 17, 2024', speaker: 'Ev. Elvis', dur: '40 min', color: '#0F5C42', videoId: 'zm8otfP-DS4' },
+    { title: 'African Anglican Worship — Sermon by Bishop Prof. Julius Wanyoike', seriesKey: 'general', date: 'Jun 8, 2025', speaker: 'Bishop Prof. Julius Wanyoike', dur: '45 min', color: '#C4432B', videoId: 'oM5CC_AF4Ro' },
+    { title: 'Where Are You? — Sermon by Dean Mark Derry', seriesKey: 'general', date: 'Oct 20, 2024', speaker: 'Dean Mark Derry', dur: '38 min', color: '#6B1E2B', videoId: '0cdQRGKCV1c' },
+    { title: 'Into a Fruitful Territory', seriesKey: 'general', date: 'Sep 15, 2024', speaker: 'ACK', dur: '50 min', color: '#E8A93B', videoId: 'FZv45geGA-8' },
+    { title: 'Palm Sunday Service — Sermon by Willy Kombe', seriesKey: 'general', date: 'Apr 13, 2025', speaker: 'Willy Kombe', dur: '42 min', color: '#1B4CE0', videoId: 'eZfcoD3NKHU' },
   ]
 
   const filtered = filter === 'all' ? sermons : sermons.filter(s => s.seriesKey === filter)
@@ -1425,7 +1428,7 @@ function MinistriesPage({ setPage }: { setPage: (p: Page) => void }) {
       subtitle: t('ministries.m5Sub'),
       lead: 'Mr. David Ochieng',
       page: 'ministries' as Page,
-      img: 'assets/images/youth/youth-08.jpg',
+      img: 'assets/images/choir/choir-01.jpg',
       color: '#C4432B',
       tag: t('ministries.tagWorship'),
       desc: t('ministries.m5Desc'),
@@ -1520,6 +1523,26 @@ function MinistriesPage({ setPage }: { setPage: (p: Page) => void }) {
           ))}
         </div>
       </div>
+
+      {/* Choir & Worship Photo Gallery */}
+      <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-10">
+        <h2 className="font-display text-3xl md:text-4xl font-600 mb-8" style={{ color: '#22201D' }}>Choir & Worship — In Song</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="glass-photo-frame aspect-square">
+            <img src="assets/images/choir/choir-02.jpg" alt="Choir member" loading="lazy" className="w-full h-full object-cover" />
+          </div>
+          <div className="glass-photo-frame aspect-square">
+            <img src="assets/images/choir/choir-03.jpg" alt="Choir member" loading="lazy" className="w-full h-full object-cover" />
+          </div>
+          <div className="glass-photo-frame aspect-square">
+            <img src="assets/images/choir/choir-04.jpg" alt="Choir member" loading="lazy" className="w-full h-full object-cover" />
+          </div>
+          <div className="glass-photo-frame aspect-square">
+            <img src="assets/images/choir/choir-01.jpg" alt="Choir member" loading="lazy" className="w-full h-full object-cover" />
+          </div>
+        </div>
+      </div>
+
       <div className="bottom-nav-spacer" />
     </div>
   )
@@ -1807,6 +1830,25 @@ function MothersUnionPage({ setPage }: { setPage: (p: Page) => void }) {
         </div>
       </div>
 
+      {/* Mothers' Union Photo Gallery */}
+      <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-10">
+        <h2 className="font-display text-3xl md:text-4xl font-600 mb-8" style={{ color: '#22201D' }}>Mothers' Union — Our Members</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="glass-photo-frame aspect-square">
+            <img src="assets/images/mothers-union/mothers-union-01.jpg" alt="Mothers' Union member" loading="lazy" className="w-full h-full object-cover" />
+          </div>
+          <div className="glass-photo-frame aspect-square">
+            <img src="assets/images/mothers-union/mothers-union-02.jpg" alt="Mothers' Union member" loading="lazy" className="w-full h-full object-cover" />
+          </div>
+          <div className="glass-photo-frame aspect-square">
+            <img src="assets/images/mothers-union/mothers-union-03.jpg" alt="Mothers' Union member" loading="lazy" className="w-full h-full object-cover" />
+          </div>
+          <div className="glass-photo-frame aspect-square">
+            <img src="assets/images/mothers-union/mothers-union-04.jpg" alt="Mothers' Union member" loading="lazy" className="w-full h-full object-cover" />
+          </div>
+        </div>
+      </div>
+
       <MinistryJoinCTA page="mothers-union" setPage={setPage} />
       <div className="bottom-nav-spacer" />
     </div>
@@ -2009,7 +2051,7 @@ function LeadershipPage({ setPage }: { setPage: (p: Page) => void }) {
       <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-16 md:py-24">
         <div className="grid md:grid-cols-2 gap-12 items-start">
           <div className="glass-photo-frame aspect-[4/5]">
-            <img src="assets/images/events/rev-julis-lamp-lighting.jpg" alt="Rev. Julius lighting the Easter lamp at ACK Berea Church" loading="lazy" className="w-full h-full object-cover" />
+            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-01.jpg" alt="Rev. Samuel Mwangi, Vicar of ACK Berea Church" loading="lazy" className="w-full h-full object-cover" />
           </div>
           <div>
             <span className="regency-rule block mb-5" style={{ borderColor: '#C9A24B' }} />
@@ -2028,6 +2070,40 @@ function LeadershipPage({ setPage }: { setPage: (p: Page) => void }) {
                 The heart of our parish is a people — the youth on Friday nights, mothers serving their families, men walking together, children growing in faith. Come and belong with us."
               </p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Rev. Mwangi Photo Gallery */}
+      <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-10">
+        <h2 className="font-display text-3xl md:text-4xl font-600 mb-8" style={{ color: '#22201D' }}>Rev. Samuel Mwangi — In Service</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="glass-photo-frame aspect-square">
+            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-02.jpg" alt="Rev. Samuel Mwangi" loading="lazy" className="w-full h-full object-cover" />
+          </div>
+          <div className="glass-photo-frame aspect-square">
+            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-03.jpg" alt="Rev. Samuel Mwangi" loading="lazy" className="w-full h-full object-cover" />
+          </div>
+          <div className="glass-photo-frame aspect-square">
+            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-baptism.jpg" alt="Rev. Samuel Mwangi baptising a member" loading="lazy" className="w-full h-full object-cover" />
+          </div>
+          <div className="glass-photo-frame aspect-square">
+            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-04.jpg" alt="Rev. Samuel Mwangi" loading="lazy" className="w-full h-full object-cover" />
+          </div>
+          <div className="glass-photo-frame aspect-square">
+            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-05.jpg" alt="Rev. Samuel Mwangi" loading="lazy" className="w-full h-full object-cover" />
+          </div>
+          <div className="glass-photo-frame aspect-square">
+            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-06.jpg" alt="Rev. Samuel Mwangi" loading="lazy" className="w-full h-full object-cover" />
+          </div>
+          <div className="glass-photo-frame aspect-square">
+            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-07.jpg" alt="Rev. Samuel Mwangi" loading="lazy" className="w-full h-full object-cover" />
+          </div>
+          <div className="glass-photo-frame aspect-square">
+            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-08.jpg" alt="Rev. Samuel Mwangi" loading="lazy" className="w-full h-full object-cover" />
+          </div>
+          <div className="glass-photo-frame aspect-square">
+            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-09.jpg" alt="Rev. Samuel Mwangi" loading="lazy" className="w-full h-full object-cover" />
           </div>
         </div>
       </div>
@@ -2351,17 +2427,29 @@ function NewsPage() {
 function GalleryPage() {
   const photos = [
     { img: 'assets/images/general/worship-01.jpg', alt: 'Congregation singing during worship', cat: 'Worship' },
+    { img: 'assets/images/leadership/rev-mwangi/rev-mwangi-01.jpg', alt: 'Rev. Samuel Mwangi, Vicar', cat: 'Leadership' },
     { img: 'assets/images/events/baptism-rev-julius.jpg', alt: 'Rev. Julius baptising a new member', cat: 'Sacraments' },
+    { img: 'assets/images/choir/choir-01.jpg', alt: 'Choir member', cat: 'Choir' },
     { img: 'assets/images/youth/youth-02.jpg', alt: 'Youth worship team in rehearsal', cat: 'Youth' },
+    { img: 'assets/images/mothers-union/mothers-union-01.jpg', alt: "Mothers' Union member", cat: "Mothers' Union" },
     { img: 'assets/images/events/easter-lamp-lighting-2.jpg', alt: 'Easter vigil lamp lighting', cat: 'Seasonal' },
+    { img: 'assets/images/choir/choir-02.jpg', alt: 'Choir member', cat: 'Choir' },
     { img: 'assets/images/youth/youth-04.jpg', alt: 'Youth at a group activity', cat: 'Youth' },
     { img: 'assets/images/general/congregation-02.jpg', alt: 'The congregation at Sunday service', cat: 'Worship' },
+    { img: 'assets/images/mothers-union/mothers-union-02.jpg', alt: "Mothers' Union member", cat: "Mothers' Union" },
+    { img: 'assets/images/leadership/rev-mwangi/rev-mwangi-02.jpg', alt: 'Rev. Samuel Mwangi', cat: 'Leadership' },
     { img: 'assets/images/youth/youth-06.jpg', alt: 'Youth camp group photo', cat: 'Youth' },
+    { img: 'assets/images/choir/choir-03.jpg', alt: 'Choir member', cat: 'Choir' },
     { img: 'assets/images/events/rev-julis-lamp-lighting.jpg', alt: 'Rev. Julius lighting the lamp', cat: 'Seasonal' },
+    { img: 'assets/images/mothers-union/mothers-union-03.jpg', alt: "Mothers' Union member", cat: "Mothers' Union" },
     { img: 'assets/images/kama.jpg', alt: 'KAMA members of ACK Berea Church', cat: 'Fellowships' },
+    { img: 'assets/images/leadership/rev-mwangi/rev-mwangi-03.jpg', alt: 'Rev. Samuel Mwangi baptising', cat: 'Leadership' },
     { img: 'assets/images/youth/youth-08.jpg', alt: 'Young people enjoying fellowship', cat: 'Youth' },
+    { img: 'assets/images/choir/choir-04.jpg', alt: 'Choir member', cat: 'Choir' },
     { img: 'assets/images/mothers-union.jpg', alt: "Mothers' Union members gathered", cat: 'Fellowships' },
+    { img: 'assets/images/mothers-union/mothers-union-04.jpg', alt: "Mothers' Union member", cat: "Mothers' Union" },
     { img: 'assets/images/youth/youth-10.jpg', alt: 'Youth ministry outing', cat: 'Youth' },
+    { img: 'assets/images/leadership/rev-mwangi/rev-mwangi-04.jpg', alt: 'Rev. Samuel Mwangi', cat: 'Leadership' },
     { img: 'assets/images/youth/youth-12.jpg', alt: 'Youth group study time', cat: 'Youth' },
     { img: 'assets/images/events/baptism.jpg', alt: 'Baptism service at the font', cat: 'Sacraments' },
     { img: 'assets/images/general/congregation-01.jpg', alt: 'Worshippers at ACK Berea Church', cat: 'Worship' },
