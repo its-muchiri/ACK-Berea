@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACK Berea Youth Survey</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #1a365d;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .survey-info {
+            background: #e6f7ff;
+            border-left: 4px solid #1890ff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 5px 5px 0;
+        }
+        .survey-info h3 {
+            margin: 0 0 10px;
+            color: #1890ff;
+            font-size: 16px;
+        }
+        .survey-info ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #666;
+        }
+        .survey-info li {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .survey-frame {
+            width: 100%;
+            height: 600px;
+            border: none;
+            border-radius: 5px;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #fafafa;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 12px;
+        }
+        .btn {
+            display: inline-block;
+            background: #1a365d;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #2c5282;
+        }
+        .instructions {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .step {
+            margin-bottom: 15px;
+            padding-left: 25px;
+            position: relative;
+        }
+        .step:before {
+            content: counter(step);
+            counter-increment: step;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            color: #1a365d;
+        }
+        .instructions ol {
+            counter-reset: step;
+            padding-left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ACK Berea Youth Website Feedback</h1>
+            <p>Help us improve our website for young people like you!</p>
+        </div>
+        
+        <div class="content">
+            <div class="survey-info">
+                <h3>About This Survey</h3>
+                <ul>
+                    <li><strong>Time:</strong> 4-6 minutes to complete</li>
+                    <li><strong>Purpose:</strong> Improve the ACK Berea website for youth</li>
+                    <li><strong>Anonymous:</strong> No personal information collected</li>
+                    <li><strong>Optional:</strong> Skip any question you prefer not to answer</li>
+                </ul>
+            </div>
+            
+            <div class="instructions">
+                <h3>Before You Begin</h3>
+                <ol>
+                    <li>Open <a href="https://ack-berea.vercel.app/" target="_blank">ACK Berea Website</a> in a new tab</li>
+                    <li>Spend 2-3 minutes exploring the site as you normally would</li>
+                    <li>Try the features mentioned in the survey questions</li>
+                    <li>Return here and complete the survey</li>
+                </ol>
+            </div>
+            
+            <!-- Replace FORM_ID with your actual Google Form ID -->
+            <iframe 
+                class="survey-frame"
+                src="https://docs.google.com/forms/d/e/FORM_ID/viewform?embedded=true"
+                frameborder="0"
+                marginheight="0"
+                marginwidth="0">
+                Loading survey...
+            </iframe>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="https://docs.google.com/forms/d/e/FORM_ID/viewform" target="_blank" class="btn">
+                    Open Survey in New Tab
+                </a>
+                <a href="https://ack-berea.vercel.app/" target="_blank" class="btn" style="background: #38a169;">
+                    Visit Church Website
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>ACK Berea Church · Tola Parish · Anglican Church of Kenya</p>
+            <p>Ngoingwa, Weteithie Road · Diocese of Thika</p>
+        </div>
+    </div>
+
+    <script>
+        // Replace FORM_ID with your actual Google Form ID
+        // The ID is the long string in your Google Form URL after /d/e/
+        // Example: https://docs.google.com/forms/d/e/1FAIpQLSe.../viewform
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // You can add JavaScript here for additional functionality
+            console.log('ACK Berea Youth Survey loaded');
+        });
+    </script>
+</body>
+</html>

@@ -1,11 +1,17 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { useI18n } from './i18n'
+import BiblePage from './components/BiblePage'
+import VerseOfTheDay from './components/VerseOfTheDay'
+import OrderOfService from './components/OrderOfService'
+const BibleModel = lazy(() => import('./components/BibleModel'))
 
-type Page = 'home' | 'about' | 'sermons' | 'plan-visit' | 'give' | 'contact' | 'events' | 'ministries' | 'kama' | 'mothers-union' | 'sunday-school' | 'youth' | 'service-times' | 'leadership' | 'get-involved' | 'prayer-requests' | 'news' | 'gallery' | 'faq' | 'small-groups' | 'live' | 'testimonies'
+const API_URL = import.meta.env.VITE_API_URL || 'https://ack-berea-api.vercel.app'
+
+type Page = 'home' | 'about' | 'sermons' | 'plan-visit' | 'give' | 'contact' | 'events' | 'ministries' | 'kama' | 'mothers-union' | 'sunday-school' | 'youth' | 'service-times' | 'leadership' | 'get-involved' | 'prayer-requests' | 'news' | 'gallery' | 'faq' | 'small-groups' | 'live' | 'testimonies' | 'bible' | 'outreach' | 'choir' | 'order-of-service'
 
 // ─── Reeded Glass Nav ────────────────────────────────────────────────────────
 
-function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
+function Nav({ page, go, goBack, goForward, canGoBack, canGoForward }: { page: Page; go: (p: Page) => void; goBack: () => void; goForward: () => void; canGoBack: boolean; canGoForward: boolean }) {
   const { t } = useI18n()
   const [scrolled, setScrolled] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
@@ -31,13 +37,15 @@ function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
     [t('menu.prayerRequests'), 'prayer-requests'],
     [t('menu.news'), 'news'],
     [t('menu.gallery'), 'gallery'],
+    ['Bible', 'bible'],
+    ['Order of Service', 'order-of-service'],
+    ['Community Outreach', 'outreach'],
+    ['Choir & Worship', 'choir'],
     [t('menu.smallGroups'), 'small-groups'],
     [t('menu.liveStream'), 'live'],
     [t('menu.testimonies'), 'testimonies'],
     [t('menu.faq'), 'faq'],
   ]
-
-  const go = (p: Page) => { setMoreOpen(false); setPage(p); window.scrollTo(0, 0) }
 
   return (
     <header
@@ -52,11 +60,40 @@ function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
       }}
     >
       <div className="max-w-screen-xl mx-auto px-6 md:px-10 flex items-center justify-between h-16">
-        {/* Logo */}
-        <button
-          onClick={() => { setPage('home'); window.scrollTo(0, 0) }}
-          className="flex items-center gap-3"
-        >
+        {/* Back/Forward Buttons + Logo */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={goBack}
+            disabled={!canGoBack}
+            className="w-9 h-9 flex items-center justify-center rounded-full transition-all hover:opacity-80 disabled:opacity-25 disabled:cursor-not-allowed"
+            style={{
+              background: scrolled ? 'rgba(34,32,29,0.08)' : 'rgba(247,245,241,0.12)',
+              border: `1px solid ${scrolled ? 'rgba(184,178,168,0.3)' : 'rgba(255,255,255,0.15)'}`,
+            }}
+            aria-label="Go back"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={scrolled ? '#22201D' : '#F7F5F1'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <button
+            onClick={goForward}
+            disabled={!canGoForward}
+            className="w-9 h-9 flex items-center justify-center rounded-full transition-all hover:opacity-80 disabled:opacity-25 disabled:cursor-not-allowed"
+            style={{
+              background: scrolled ? 'rgba(34,32,29,0.08)' : 'rgba(247,245,241,0.12)',
+              border: `1px solid ${scrolled ? 'rgba(184,178,168,0.3)' : 'rgba(255,255,255,0.15)'}`,
+            }}
+            aria-label="Go forward"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={scrolled ? '#22201D' : '#F7F5F1'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+          <button
+            onClick={() => go('home')}
+            className="flex items-center gap-3"
+          >
           <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0" style={{ background: '#F7F5F1', border: '1px solid rgba(184,178,168,0.35)' }}>
             <img src="assets/images/logo/ack-crest.png" alt="ACK Berea Church, Tola Parish emblem" className="w-full h-full object-contain" />
           </div>
@@ -69,6 +106,7 @@ function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
             </div>
           </div>
         </button>
+        </div>
 
         {/* Desktop Links */}
         <nav className="hidden md:flex items-center gap-7">
@@ -115,7 +153,7 @@ function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
                   {moreLinks.map(([label, id]) => (
                     <button
                       key={id}
-                      onClick={() => go(id)}
+                      onClick={() => { setMoreOpen(false); go(id) }}
                       className="block w-full text-left px-4 py-2.5 text-sm rounded-md transition-colors"
                       style={{
                         color: page === id ? '#1B4CE0' : '#22201D',
@@ -160,7 +198,7 @@ function Nav({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
 
 // ─── Bottom Mobile Nav ───────────────────────────────────────────────────────
 
-function BottomNav({ page, setPage, onMenu }: { page: Page; setPage: (p: Page) => void; onMenu: () => void }) {
+function BottomNav({ page, go, onMenu }: { page: Page; go: (p: Page) => void; onMenu: () => void }) {
   const { t } = useI18n()
   const items: { label: string; page: Page; icon: string; menu?: boolean }[] = [
     { label: t('nav.home'), page: 'home', icon: '⌂' },
@@ -184,7 +222,7 @@ function BottomNav({ page, setPage, onMenu }: { page: Page; setPage: (p: Page) =
         {items.map((item) => (
           <button
             key={item.page}
-            onClick={() => { if (item.menu) { onMenu() } else { setPage(item.page); window.scrollTo(0, 0) } }}
+            onClick={() => { if (item.menu) { onMenu() } else { go(item.page) } }}
             className="flex flex-col items-center gap-1 min-w-[44px] min-h-[44px] justify-center"
             style={{ color: page === item.page ? '#1B4CE0' : '#B8B2A8' }}
           >
@@ -201,7 +239,7 @@ function BottomNav({ page, setPage, onMenu }: { page: Page; setPage: (p: Page) =
 
 // ─── Mobile Menu Drawer ───────────────────────────────────────────────────────
 
-function MobileMenu({ open, page, setPage, onClose }: { open: boolean; page: Page; setPage: (p: Page) => void; onClose: () => void }) {
+function MobileMenu({ open, page, go, onClose }: { open: boolean; page: Page; go: (p: Page) => void; onClose: () => void }) {
   const { t } = useI18n()
   const groups: { title: string; items: [string, Page][] }[] = [
     {
@@ -235,6 +273,8 @@ function MobileMenu({ open, page, setPage, onClose }: { open: boolean; page: Pag
         [t('menu.gallery'), 'gallery'],
         [t('menu.testimonies'), 'testimonies'],
         [t('menu.prayerRequests'), 'prayer-requests'],
+        ['Community Outreach', 'outreach'],
+        ['Choir & Worship', 'choir'],
         [t('menu.events'), 'events'],
         [t('menu.faq'), 'faq'],
         [t('menu.give'), 'give'],
@@ -276,7 +316,7 @@ function MobileMenu({ open, page, setPage, onClose }: { open: boolean; page: Pag
               {g.items.map(([label, id]) => (
                 <button
                   key={id}
-                  onClick={() => { setPage(id); window.scrollTo(0, 0); onClose() }}
+                  onClick={() => { go(id); onClose() }}
                   className="text-left px-4 py-3 text-sm transition-colors"
                   style={{
                     color: page === id ? '#E8A93B' : '#F7F5F1',
@@ -350,37 +390,43 @@ function SeriesTag({ label, color }: { label: string; color: string }) {
 
 // ─── HOME PAGE ───────────────────────────────────────────────────────────────
 
-function HomePage({ setPage }: { setPage: (p: Page) => void }) {
+function HomePage({ go }: { go: (p: Page) => void }) {
   const { t } = useI18n()
-  const sermonCards = [
-    {
-      num: '01',
-      title: t('sermons.s1'),
-      series: 'Gospel of John',
-      date: 'Jul 27, 2025',
-      duration: '42 min',
-      color: '#1B4CE0',
-      img: 'photo-1507003211169-0a1dd7228f2d',
-    },
-    {
-      num: '02',
-      title: t('sermons.s2'),
-      series: 'Hebrews Series',
-      date: 'Jul 20, 2025',
-      duration: '38 min',
-      color: '#0F5C42',
-      img: 'photo-1464207687429-7505649dae38',
-    },
-    {
-      num: '03',
-      title: t('sermons.s3'),
-      series: 'Gospel of John',
-      date: 'Jul 13, 2025',
-      duration: '45 min',
-      color: '#6B1E2B',
-      img: 'photo-1529070538774-1843cb3265df',
-    },
+  const [activeSermon, setActiveSermon] = useState(0)
+  const [newsletterEmail, setNewsletterEmail] = useState('')
+  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newsletterEmail) return
+    setNewsletterStatus('sending')
+    try {
+      const res = await fetch(`${API_URL}/api/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'newsletter', data: { email: newsletterEmail } }),
+      })
+      if (res.ok) {
+        setNewsletterStatus('sent')
+        setNewsletterEmail('')
+      } else {
+        setNewsletterStatus('error')
+      }
+    } catch {
+      setNewsletterStatus('error')
+    }
+  }
+
+  const sermons = [
+    { title: 'Effective Prayer', speaker: 'ACK', date: 'Nov 3, 2024', dur: '55 min', color: '#1E3A6D', videoId: '-ULy3PA14Gk' },
+    { title: 'Sermon by Ev. Elvis', speaker: 'Ev. Elvis', date: 'Nov 17, 2024', dur: '40 min', color: '#0F5C42', videoId: 'zm8otfP-DS4' },
+    { title: 'African Anglican Worship', speaker: 'Bishop Prof. Julius Wanyoike', date: 'Jun 8, 2025', dur: '45 min', color: '#C4432B', videoId: 'oM5CC_AF4Ro' },
+    { title: 'Where Are You?', speaker: 'Dean Mark Derry', date: 'Oct 20, 2024', dur: '38 min', color: '#6B1E2B', videoId: '0cdQRGKCV1c' },
+    { title: 'Into a Fruitful Territory', speaker: 'ACK', date: 'Sep 15, 2024', dur: '50 min', color: '#E8A93B', videoId: 'FZv45geGA-8' },
+    { title: 'Palm Sunday Service', speaker: 'Willy Kombe', date: 'Apr 13, 2025', dur: '42 min', color: '#1B4CE0', videoId: 'eZfcoD3NKHU' },
   ]
+
+  const featured = sermons[activeSermon]
 
   const quickLinks = [
     { title: t('home.sermonsTitle'), desc: t('home.sermonsDesc'), page: 'sermons' as Page, color: '#1B4CE0', shape: 'circle' },
@@ -444,14 +490,14 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
-                  onClick={() => { setPage('plan-visit'); window.scrollTo(0, 0) }}
+                  onClick={() => { go('plan-visit'); window.scrollTo(0, 0) }}
                   className="px-7 py-4 text-sm font-semibold uppercase tracking-wider transition-all hover:opacity-90 active:scale-95"
                   style={{ background: '#F7F5F1', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
                 >
                   {t('home.planVisitBtn')}
                 </button>
                 <button
-                  onClick={() => { setPage('sermons'); window.scrollTo(0, 0) }}
+                  onClick={() => { go('sermons'); window.scrollTo(0, 0) }}
                   className="px-7 py-4 text-sm font-semibold uppercase tracking-wider transition-all hover:opacity-90"
                   style={{ border: '1px solid rgba(247,245,241,0.4)', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
                 >
@@ -460,26 +506,17 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
               </div>
             </div>
 
-            {/* Editorial geometry - desktop only */}
-            <div className="hidden md:flex flex-col items-end gap-6">
-              <div className="w-48 h-48 rounded-full border-2 flex items-center justify-center" style={{ borderColor: 'rgba(247,245,241,0.2)' }}>
-                <div className="w-32 h-32 rounded-full" style={{ background: 'rgba(247,245,241,0.08)' }}>
-                  <div className="w-full h-full rounded-full flex items-center justify-center">
-                    <div className="w-16 h-16 rounded-full" style={{ background: 'rgba(247,245,241,0.15)' }} />
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="h-px w-24" style={{ background: 'rgba(247,245,241,0.3)' }} />
-                <div className="font-display text-6xl italic font-300" style={{ color: 'rgba(247,245,241,0.15)' }}>
-                  {t('home.faith')}
-                </div>
-              </div>
-              <div className="flex gap-3">
-                {['#1B4CE0', '#E8A93B', '#C4432B'].map((c, i) => (
-                  <div key={i} className="w-8 h-8" style={{ background: c, opacity: 0.7 }} />
-                ))}
-              </div>
+            {/* Verse of the Day */}
+            <div className="flex flex-col items-center justify-center p-6 md:p-8" style={{ background: 'rgba(247,245,241,0.06)', backdropFilter: 'blur(8px)', border: '1px solid rgba(247,245,241,0.1)', borderRadius: 12 }}>
+              <div className="text-[10px] uppercase tracking-[0.2em] mb-4" style={{ color: 'rgba(201,162,75,0.7)', fontFamily: 'Inter, sans-serif' }}>Verse of the Day</div>
+              <div className="w-full"><VerseOfTheDay /></div>
+              <button
+                onClick={() => { go('bible'); window.scrollTo(0, 0) }}
+                className="mt-4 text-[11px] font-medium uppercase tracking-wider transition-opacity hover:opacity-70"
+                style={{ color: '#C9A24B', fontFamily: 'Inter, sans-serif' }}
+              >
+                Search the Bible →
+              </button>
             </div>
           </div>
         </div>
@@ -511,7 +548,7 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
           {quickLinks.map((item) => (
             <button
               key={item.page}
-              onClick={() => { setPage(item.page); window.scrollTo(0, 0) }}
+              onClick={() => { go(item.page); window.scrollTo(0, 0) }}
               className="group relative p-6 md:p-8 text-left transition-all hover:scale-[1.02] active:scale-98"
               style={{ background: item.color, minHeight: 160 }}
             >
@@ -537,7 +574,108 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
         </div>
       </section>
 
-      {/* Latest Sermon — Editorial strip */}
+      {/* The Word — Bible Section */}
+      <section
+        className="relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, #1A1612 0%, #22201D 40%, #1A1814 100%)',
+        }}
+      >
+        {/* Decorative grain overlay */}
+        <div
+          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+          }}
+        />
+
+        {/* Gold accent lines */}
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(201,162,75,0.3), transparent)' }} />
+        <div className="absolute bottom-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(201,162,75,0.3), transparent)' }} />
+
+        <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-16 md:py-28">
+          <div className="grid md:grid-cols-2 gap-12 md:gap-20 items-center">
+            {/* Left: 3D Model */}
+            <div className="relative order-1 md:order-1">
+              {/* Glow circle behind model */}
+              <div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[400px] md:h-[400px] rounded-full blur-3xl"
+                style={{ background: 'radial-gradient(circle, rgba(201,162,75,0.12) 0%, transparent 70%)' }}
+              />
+              <Suspense fallback={null}><BibleModel /></Suspense>
+            </div>
+
+            {/* Right: Content */}
+            <div className="order-2 md:order-2">
+              <div
+                className="inline-flex items-center gap-2 px-4 py-1.5 mb-6"
+                style={{
+                  background: 'rgba(201,162,75,0.08)',
+                  border: '1px solid rgba(201,162,75,0.2)',
+                  borderRadius: 100,
+                }}
+              >
+                <span style={{ color: '#C9A24B', fontSize: 12 }}>✝</span>
+                <span className="text-xs uppercase tracking-[0.2em] font-medium" style={{ color: '#C9A24B', fontFamily: 'Inter, sans-serif' }}>
+                  The Living Word
+                </span>
+              </div>
+
+              <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-600 mb-6 leading-[1.05]" style={{ color: '#F7F5F1' }}>
+                Explore the{' '}
+                <span className="italic" style={{ color: '#C9A24B' }}>Bible</span>
+              </h2>
+
+              <p className="text-lg md:text-xl mb-8 leading-relaxed max-w-lg" style={{ color: 'rgba(247,245,241,0.65)', fontFamily: 'Inter, sans-serif' }}>
+                Search, read, and reflect on Scripture. Browse every book and chapter, discover daily verses, and let God's Word speak into your day.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button
+                  onClick={() => { go('bible'); window.scrollTo(0, 0) }}
+                  className="px-8 py-4 text-sm font-semibold uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  style={{
+                    background: 'linear-gradient(135deg, #C9A24B 0%, #E8A93B 100%)',
+                    color: '#22201D',
+                    borderRadius: 8,
+                    fontFamily: 'Inter, sans-serif',
+                  }}
+                >
+                  Open Bible →
+                </button>
+                <button
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  className="px-8 py-4 text-sm font-medium uppercase tracking-wider transition-all hover:bg-[rgba(247,245,241,0.06)]"
+                  style={{
+                    border: '1px solid rgba(247,245,241,0.15)',
+                    color: 'rgba(247,245,241,0.8)',
+                    borderRadius: 8,
+                    fontFamily: 'Inter, sans-serif',
+                  }}
+                >
+                  Verse of the Day
+                </button>
+              </div>
+
+              {/* Quick stats */}
+              <div className="flex gap-10 mt-12 pt-8" style={{ borderTop: '1px solid rgba(247,245,241,0.06)' }}>
+                {[
+                  { num: '66', label: 'Books' },
+                  { num: '1,189', label: 'Chapters' },
+                  { num: '31,102', label: 'Verses' },
+                ].map((stat) => (
+                  <div key={stat.label}>
+                    <div className="font-display text-2xl md:text-3xl font-600" style={{ color: '#C9A24B' }}>{stat.num}</div>
+                    <div className="text-xs mt-1 uppercase tracking-wider" style={{ color: 'rgba(247,245,241,0.4)', fontFamily: 'Inter, sans-serif' }}>{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Latest Sermon — Carousel */}
       <section style={{ background: '#22201D' }} className="py-16 md:py-24">
         <div className="max-w-screen-xl mx-auto px-6 md:px-10">
           <div className="flex items-center gap-4 mb-12">
@@ -545,41 +683,44 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
             <div className="flex-1 h-px" style={{ background: 'rgba(247,245,241,0.1)' }} />
           </div>
 
-          <div className="grid md:grid-cols-5 gap-8 md:gap-16 items-start">
-            {/* Featured sermon */}
+          <div className="grid md:grid-cols-5 gap-8 md:gap-12 items-start">
+            {/* Featured sermon video */}
             <div className="md:col-span-3">
               <div
-                className="relative aspect-video mb-6 overflow-hidden"
-                style={{ background: '#1A1814' }}
+                className="relative aspect-video mb-6 overflow-hidden group cursor-pointer"
+                style={{ background: '#1A1814', borderRadius: 12 }}
+                onClick={() => go('sermons')}
               >
                 <img
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=450&fit=crop&auto=format"
-                  alt="Pastor preaching"
-                  className="w-full h-full object-cover opacity-70"
+                  src={`https://img.youtube.com/vi/${featured.videoId}/maxresdefault.jpg`}
+                  alt={featured.title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  onError={(e) => { (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${featured.videoId}/hqdefault.jpg` }}
                 />
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute inset-0 flex items-center justify-center opacity-90 group-hover:opacity-100 transition-opacity">
                   <div
-                    className="w-16 h-16 rounded-full flex items-center justify-center"
+                    className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center transition-transform group-hover:scale-110"
                     style={{ background: 'rgba(247,245,241,0.2)', backdropFilter: 'blur(8px)', border: '1px solid rgba(247,245,241,0.3)' }}
                   >
-                    <div className="w-0 h-0 ml-1" style={{ borderTop: '10px solid transparent', borderBottom: '10px solid transparent', borderLeft: '16px solid #F7F5F1' }} />
+                    <div className="w-0 h-0 ml-2" style={{ borderTop: '12px solid transparent', borderBottom: '12px solid transparent', borderLeft: '20px solid #F7F5F1' }} />
                   </div>
                 </div>
                 <div className="absolute top-4 left-4">
-                  <SeriesTag label={t('sermons.seriesJohn')} color="#1B4CE0" />
+                  <SeriesTag label={t('home.latestMessage')} color={featured.color} />
                 </div>
-                <div className="absolute bottom-4 right-4 text-xs" style={{ color: 'rgba(247,245,241,0.6)', fontFamily: 'Inter, sans-serif' }}>
-                  42 {t('common.min')}
+                <div className="absolute bottom-4 right-4 text-xs px-2 py-1" style={{ color: 'rgba(247,245,241,0.8)', fontFamily: 'Inter, sans-serif', background: 'rgba(0,0,0,0.5)', borderRadius: 4 }}>
+                  {featured.dur}
                 </div>
               </div>
-              <div className="text-xs uppercase tracking-widest mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
-                {t('home.sermonDate')}
+              <div className="text-xs uppercase tracking-widest mb-2" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
+                {featured.date} · {featured.speaker}
               </div>
-              <h3 className="font-display text-3xl md:text-4xl font-600 mb-4" style={{ color: '#F7F5F1', lineHeight: 1.1 }}>
-                {t('home.breadOfLife')}
+              <h3 className="font-display text-2xl md:text-3xl font-600 mb-4" style={{ color: '#F7F5F1', lineHeight: 1.1 }}>
+                {featured.title}
               </h3>
               <button
-                onClick={() => { setPage('sermons'); window.scrollTo(0, 0) }}
+                onClick={() => go('sermons')}
                 className="text-sm font-medium uppercase tracking-wider flex items-center gap-2 transition-opacity hover:opacity-70"
                 style={{ color: '#E8A93B', fontFamily: 'Inter, sans-serif' }}
               >
@@ -587,39 +728,43 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
               </button>
             </div>
 
-            {/* Pull quote + sidebar */}
+            {/* Carousel sidebar */}
             <div className="md:col-span-2">
-              <div
-                className="p-6 mb-8"
-                style={{ borderLeft: '3px solid #C9A24B' }}
-              >
-                <div className="font-display text-2xl italic font-300 mb-4" style={{ color: '#F7F5F1', lineHeight: 1.4 }}>
-                  {t('home.breadQuote')}
-                </div>
-                <div className="text-xs uppercase tracking-widest" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
-                  {t('home.john635')}
-                </div>
+              <div className="text-xs uppercase tracking-widest mb-4" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
+                {t('home.moreSermons')}
               </div>
-
-              <div className="space-y-4">
-                <div className="text-xs uppercase tracking-widest mb-4" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
-                  {t('home.moreSermons')}
-                </div>
-                {sermonCards.slice(1).map((s) => (
+              <div className="space-y-3">
+                {sermons.map((s, i) => (
                   <button
-                    key={s.num}
-                    onClick={() => { setPage('sermons'); window.scrollTo(0, 0) }}
-                    className="w-full flex items-center gap-4 text-left group"
+                    key={s.videoId}
+                    onClick={() => setActiveSermon(i)}
+                    className="w-full flex items-center gap-4 text-left group transition-all"
+                    style={{
+                      padding: '12px 16px',
+                      background: activeSermon === i ? 'rgba(247,245,241,0.08)' : 'transparent',
+                      border: `1px solid ${activeSermon === i ? 'rgba(201,162,75,0.4)' : 'rgba(247,245,241,0.06)'}`,
+                      borderRadius: 8,
+                    }}
                   >
-                    <div className="w-12 h-12 flex-shrink-0" style={{ background: s.color, opacity: 0.8 }}>
-                      <div className="w-full h-full flex items-center justify-center text-xs font-mono font-bold" style={{ color: '#F7F5F1' }}>
-                        {s.num}
+                    <div className="w-16 h-10 flex-shrink-0 overflow-hidden" style={{ borderRadius: 6, background: s.color }}>
+                      <img
+                        src={`https://img.youtube.com/vi/${s.videoId}/mqdefault.jpg`}
+                        alt={s.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate" style={{ color: activeSermon === i ? '#F7F5F1' : 'rgba(247,245,241,0.7)', fontFamily: 'Inter, sans-serif' }}>
+                        {s.title}
+                      </div>
+                      <div className="text-xs mt-0.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
+                        {s.date} · {s.dur}
                       </div>
                     </div>
-                    <div>
-                      <div className="font-display text-base font-600 group-hover:opacity-70 transition-opacity" style={{ color: '#F7F5F1' }}>{s.title}</div>
-                      <div className="text-xs mt-0.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{s.date} · {s.duration}</div>
-                    </div>
+                    {activeSermon === i && (
+                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#C9A24B' }} />
+                    )}
                   </button>
                 ))}
               </div>
@@ -633,7 +778,7 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="glass-photo-frame aspect-[4/3]">
             <img
-              src="assets/images/youth/youth-02.jpg"
+              src="assets/images/youth/youth-02.webp"
               alt="Congregation gathered together in worship at ACK Berea Church"
               className="w-full h-full object-cover"
             />
@@ -647,7 +792,7 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
               {t('home.communityBody')}
             </p>
             <button
-              onClick={() => { setPage('plan-visit'); window.scrollTo(0, 0) }}
+              onClick={() => { go('plan-visit'); window.scrollTo(0, 0) }}
               className="px-6 py-3 text-sm font-semibold uppercase tracking-wider transition-all hover:opacity-90"
               style={{ background: '#1B4CE0', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
             >
@@ -662,9 +807,9 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
         <div className="max-w-screen-xl mx-auto px-6 md:px-10">
           <div className="grid md:grid-cols-3 gap-px" style={{ background: '#B8B2A8' }}>
             {[
-              { label: t('home.sundayServices'), val: '8:00 AM · 10:30 AM', sub: t('home.mainSanctuary') },
+              { label: t('home.sundayServices'), val: '8:00 AM & 10:45 AM', sub: t('home.mainSanctuary') },
               { label: t('home.wednesdayStudy'), val: '6:00 PM', sub: t('home.parishHall') },
-              { label: t('home.location'), val: 'Tola Road, Berea', sub: t('home.nairobi') },
+              { label: t('home.location'), val: 'Ngoingwa, Weteithie Road', sub: t('home.nairobi') },
             ].map((item) => (
               <div key={item.label} className="p-8 md:p-10" style={{ background: '#F7F5F1' }}>
                 <div className="text-xs uppercase tracking-widest mb-2" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{item.label}</div>
@@ -692,27 +837,42 @@ function HomePage({ setPage }: { setPage: (p: Page) => void }) {
           <p className="text-base mb-10 max-w-md mx-auto" style={{ color: 'rgba(247,245,241,0.65)', fontFamily: 'Inter, sans-serif' }}>
             {t('home.newsletterBody')}
           </p>
-          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={e => e.preventDefault()}>
-            <input
-              type="email"
-              placeholder={t('home.emailPlaceholder')}
-              className="flex-1 px-5 py-4 text-sm outline-none"
-              style={{
-                background: 'rgba(247,245,241,0.12)',
-                border: '1px solid rgba(247,245,241,0.25)',
-                color: '#F7F5F1',
-                fontFamily: 'Inter, sans-serif',
-                minHeight: 44,
-              }}
-            />
-            <button
-              type="submit"
-              className="px-7 py-4 text-sm font-semibold uppercase tracking-wider"
-              style={{ background: '#C9A24B', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
-            >
-              {t('home.subscribe')}
-            </button>
-          </form>
+          {newsletterStatus === 'sent' ? (
+            <div className="text-sm py-4" style={{ color: '#C9A24B', fontFamily: 'Inter, sans-serif' }}>
+              Thank you for subscribing! You'll hear from us soon.
+            </div>
+          ) : (
+            <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={handleNewsletterSubmit}>
+              <input
+                type="email"
+                placeholder={t('home.emailPlaceholder')}
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                required
+                className="flex-1 px-5 py-4 text-sm outline-none"
+                style={{
+                  background: 'rgba(247,245,241,0.12)',
+                  border: '1px solid rgba(247,245,241,0.25)',
+                  color: '#F7F5F1',
+                  fontFamily: 'Inter, sans-serif',
+                  minHeight: 44,
+                }}
+              />
+              <button
+                type="submit"
+                disabled={newsletterStatus === 'sending'}
+                className="px-7 py-4 text-sm font-semibold uppercase tracking-wider"
+                style={{ background: '#C9A24B', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44, opacity: newsletterStatus === 'sending' ? 0.7 : 1 }}
+              >
+                {newsletterStatus === 'sending' ? 'Sending...' : t('home.subscribe')}
+              </button>
+            </form>
+          )}
+          {newsletterStatus === 'error' && (
+            <div className="text-xs mt-3" style={{ color: '#E8A93B', fontFamily: 'Inter, sans-serif' }}>
+              Something went wrong. Please try again later.
+            </div>
+          )}
         </div>
       </section>
 
@@ -771,7 +931,7 @@ function AboutPage() {
           <div className="relative">
             <div className="glass-photo-frame" style={{ height: 280 }}>
               <img
-                src="assets/images/general/congregation-01.jpg"
+                src="assets/images/general/congregation-01.webp"
                 alt="ACK Berea Church congregation gathered together"
                 className="w-full h-full object-cover"
               />
@@ -1007,7 +1167,7 @@ function SermonsPage() {
 
 // ─── PLAN VISIT PAGE ─────────────────────────────────────────────────────────
 
-function PlanVisitPage({ setPage }: { setPage: (p: Page) => void }) {
+function PlanVisitPage({ go }: { go: (p: Page) => void }) {
   const { t } = useI18n()
   const steps = [
     { num: '01', title: t('plan.step1Title'), body: t('plan.step1Body') },
@@ -1045,7 +1205,7 @@ function PlanVisitPage({ setPage }: { setPage: (p: Page) => void }) {
             {t('plan.comingSunday')} →
           </button>
           <button
-            onClick={() => { setPage('service-times'); window.scrollTo(0, 0) }}
+            onClick={() => { go('service-times'); window.scrollTo(0, 0) }}
             className="ml-3 px-6 py-4 font-semibold uppercase tracking-wider text-sm"
             style={{ border: '1px solid rgba(247,245,241,0.4)', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
           >
@@ -1062,7 +1222,7 @@ function PlanVisitPage({ setPage }: { setPage: (p: Page) => void }) {
       <section className="max-w-screen-xl mx-auto px-6 md:px-10 py-12 md:py-16">
         <div className="glass-photo-frame aspect-video">
           <img
-            src="assets/images/general/congregation-02.jpg"
+            src="assets/images/general/congregation-02.webp"
             alt="Warm welcome at ACK Berea Church entrance"
             className="w-full h-full object-cover"
           />
@@ -1153,13 +1313,63 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 
 function GivePage() {
   const { t } = useI18n()
-  const [amount, setAmount] = useState('500')
-  const [recurring, setRecurring] = useState(false)
-  const presets = ['200', '500', '1000', '2500', '5000']
+  const [account, setAccount] = useState('offering')
+  const [amount, setAmount] = useState('50')
+  const [phone, setPhone] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [statusMsg, setStatusMsg] = useState('')
+  const presets = ['50', '100', '500', '1000', '2500', '5000']
+
+  const accounts = [
+    { key: 'offering', label: 'Offering', icon: '⛪' },
+    { key: 'tithe', label: 'Tithe', icon: '🙌' },
+    { key: 'firstfruit', label: 'First Fruit', icon: '🌾' },
+    { key: 'thanksgiving', label: 'Thanksgiving', icon: '🙏' },
+  ]
+
+  const handleStkPush = async () => {
+    if (!phone || !amount) {
+      setStatus('error')
+      setStatusMsg('Please enter your phone number and amount.')
+      return
+    }
+
+    setLoading(true)
+    setStatus('idle')
+
+    try {
+      const res = await fetch(`${API_URL}/api/mpesa/stkpush`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone,
+          amount: parseInt(amount),
+          accountReference: `ACK Berea - ${account}`,
+          description: `${accounts.find(a => a.key === account)?.label} Donation`,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.CheckoutRequestID) {
+        setStatus('success')
+        setStatusMsg('Check your phone for the M-Pesa prompt. Enter your PIN to complete the donation.')
+      } else {
+        setStatus('error')
+        setStatusMsg(data.error || data.details || 'Failed to initiate payment. Please try again.')
+      }
+    } catch (err) {
+      setStatus('error')
+      setStatusMsg('Could not connect to payment server. Please try again later.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="page-fade" style={{ minHeight: '100vh' }}>
-      {/* Hero — Regency + chromatic gradient */}
+      {/* Hero */}
       <div
         className="relative pt-24 pb-20 px-6 md:px-10 overflow-hidden"
         style={{ background: 'linear-gradient(135deg, #1E3A6D 0%, #0F5C42 40%, #6B1E2B 80%, #C9A24B 100%)' }}
@@ -1188,40 +1398,58 @@ function GivePage() {
         </div>
       </div>
 
-      {/* Giving Form */}
+      {/* Giving Content */}
       <div className="glass-light" style={{ background: '#F7F5F1' }}>
         <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-16 grid md:grid-cols-2 gap-12 items-start">
-          {/* Form */}
-          <div>
-            <h2 className="font-display text-3xl font-600 mb-8" style={{ color: '#22201D' }}>{t('give.makeGift')}</h2>
 
-            {/* Recurring toggle */}
-            <div className="flex gap-3 mb-8">
-              {[
-                { key: 'one', label: t('give.oneTime') },
-                { key: 'monthly', label: t('give.monthly') },
-              ].map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => setRecurring(item.key === 'monthly')}
-                  className="px-6 py-3 text-sm font-medium uppercase tracking-wider transition-all"
-                  style={{
-                    background: (item.key === 'monthly') === recurring ? '#1E3A6D' : 'transparent',
-                    color: (item.key === 'monthly') === recurring ? '#F7F5F1' : '#22201D',
-                    border: `1px solid ${(item.key === 'monthly') === recurring ? '#1E3A6D' : '#B8B2A8'}`,
-                    fontFamily: 'Inter, sans-serif',
-                    minHeight: 44,
-                  }}
-                >
-                  {item.label}
-                </button>
-              ))}
+          {/* M-Pesa Paybill */}
+          <div>
+            <h2 className="font-display text-3xl font-600 mb-2" style={{ color: '#22201D' }}>M-Pesa Paybill</h2>
+            <p className="text-sm mb-8" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif' }}>
+              Use Lipa Na M-Pesa to give securely via your phone.
+            </p>
+
+            {/* Paybill Details */}
+            <div className="p-6 mb-8" style={{ background: '#22201D', borderRadius: 12 }}>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <div className="text-xs uppercase tracking-widest mb-1" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Business Number</div>
+                  <div className="font-display text-3xl font-700" style={{ color: '#C9A24B' }}>121389</div>
+                </div>
+                <div>
+                  <div className="text-xs uppercase tracking-widest mb-1" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Account</div>
+                  <div className="font-display text-lg font-600 capitalize" style={{ color: '#F7F5F1' }}>{account}</div>
+                </div>
+              </div>
             </div>
 
-            {/* Amount presets */}
-            <div className="mb-4">
+            {/* Account Type Selection */}
+            <div className="mb-8">
+              <div className="text-xs uppercase tracking-widest mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Select Account</div>
+              <div className="grid grid-cols-2 gap-3">
+                {accounts.map((a) => (
+                  <button
+                    key={a.key}
+                    onClick={() => setAccount(a.key)}
+                    className="p-4 text-left transition-all"
+                    style={{
+                      background: account === a.key ? '#22201D' : '#fff',
+                      color: account === a.key ? '#F7F5F1' : '#22201D',
+                      border: `1px solid ${account === a.key ? '#22201D' : '#B8B2A8'}`,
+                      borderRadius: 8,
+                    }}
+                  >
+                    <div className="text-lg mb-1">{a.icon}</div>
+                    <div className="text-sm font-semibold" style={{ fontFamily: 'Inter, sans-serif' }}>{a.label}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Amount */}
+            <div className="mb-6">
               <div className="text-xs uppercase tracking-widest mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{t('give.selectAmount')}</div>
-              <div className="grid grid-cols-3 md:grid-cols-5 gap-2 mb-4">
+              <div className="grid grid-cols-3 gap-2 mb-4">
                 {presets.map((p) => (
                   <button
                     key={p}
@@ -1229,7 +1457,7 @@ function GivePage() {
                     className="py-3 text-sm font-semibold transition-all"
                     style={{
                       background: amount === p ? '#C9A24B' : 'transparent',
-                      color: amount === p ? '#22201D' : '#22201D',
+                      color: '#22201D',
                       border: `1px solid ${amount === p ? '#C9A24B' : '#B8B2A8'}`,
                       fontFamily: 'Inter, sans-serif',
                       minHeight: 44,
@@ -1243,70 +1471,99 @@ function GivePage() {
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder={t('give.otherAmount')}
+                placeholder="Other amount"
                 className="w-full px-4 py-3 text-sm outline-none"
                 style={{ border: '1px solid #B8B2A8', background: '#fff', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
               />
             </div>
 
-            {/* Payment fields */}
-            <div className="space-y-3 mb-6">
-              {[
-                { label: t('give.fullName'), type: 'text', placeholder: 'Jane Wanjiku' },
-                { label: t('give.email'), type: 'email', placeholder: 'jane@example.com' },
-                { label: t('give.phone'), type: 'tel', placeholder: '+254 700 000 000' },
-              ].map((f) => (
-                <div key={f.label}>
-                  <div className="text-xs uppercase tracking-widest mb-1.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{f.label}</div>
-                  <input
-                    type={f.type}
-                    placeholder={f.placeholder}
-                    className="w-full px-4 py-3 text-sm outline-none"
-                    style={{ border: '1px solid #B8B2A8', background: '#fff', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
-                  />
-                </div>
-              ))}
+            {/* Phone Number */}
+            <div className="mb-6">
+              <div className="text-xs uppercase tracking-widest mb-3" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>M-Pesa Phone Number</div>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="0712 345 678"
+                className="w-full px-4 py-3 text-sm outline-none"
+                style={{ border: '1px solid #B8B2A8', background: '#fff', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
+              />
             </div>
 
+            {/* STK Push Button */}
             <button
-              className="w-full py-4 font-semibold uppercase tracking-wider text-sm transition-all hover:opacity-90"
-              style={{ background: '#0F5C42', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 54 }}
+              onClick={handleStkPush}
+              disabled={loading || !phone || !amount}
+              className="w-full py-4 text-sm font-semibold uppercase tracking-wider transition-all disabled:opacity-50"
+              style={{
+                background: loading ? '#B8B2A8' : 'linear-gradient(135deg, #0F5C42 0%, #0A4A34 100%)',
+                color: '#F7F5F1',
+                borderRadius: 8,
+                fontFamily: 'Inter, sans-serif',
+                minHeight: 52,
+              }}
             >
-              {t('give.button').replace('{amount}', `KES ${parseInt(amount || '0').toLocaleString()}`)} →
+              {loading ? 'Sending STK Push...' : `Pay KES ${parseInt(amount || '0').toLocaleString()} via M-Pesa`}
             </button>
 
-            <div className="mt-4 flex items-center gap-2">
-              <div className="text-xs" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{t('give.secure')}</div>
+            {/* Status Message */}
+            {status !== 'idle' && (
+              <div
+                className="mt-4 p-4 text-sm"
+                style={{
+                  background: status === 'success' ? 'rgba(15,92,66,0.08)' : 'rgba(196,67,43,0.08)',
+                  border: `1px solid ${status === 'success' ? 'rgba(15,92,66,0.2)' : 'rgba(196,67,43,0.2)'}`,
+                  color: status === 'success' ? '#0F5C42' : '#C4432B',
+                  borderRadius: 8,
+                  fontFamily: 'Inter, sans-serif',
+                }}
+              >
+                {status === 'success' ? '✅ ' : '❌ '}{statusMsg}
+              </div>
+            )}
+
+            {/* Manual Instructions */}
+            <div className="mt-6 p-5" style={{ background: 'rgba(15,92,66,0.06)', border: '1px solid rgba(15,92,66,0.15)', borderRadius: 8 }}>
+              <div className="text-sm font-semibold mb-2" style={{ color: '#0F5C42', fontFamily: 'Inter, sans-serif' }}>Or give manually via M-Pesa:</div>
+              <ol className="text-sm space-y-1" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif', paddingLeft: 20 }}>
+                <li>1. Go to <strong>Lipa Na M-Pesa</strong></li>
+                <li>2. Business Number: <strong>121389</strong></li>
+                <li>3. Account: <strong>{accounts.find(a => a.key === account)?.label}</strong></li>
+                <li>4. Enter amount: <strong>KES {parseInt(amount || '0').toLocaleString()}</strong></li>
+                <li>5. Confirm with your M-Pesa PIN</li>
+              </ol>
             </div>
           </div>
 
-          {/* Where it goes */}
-          <div className="glass-light-subtle p-8">
-            <h3 className="font-display text-2xl font-600 mb-6" style={{ color: '#22201D' }}>{t('give.whereGiftsGo')}</h3>
-            <div className="space-y-4">
+          {/* Info sidebar */}
+          <div>
+            <h2 className="font-display text-3xl font-600 mb-8" style={{ color: '#22201D' }}>{t('give.whereGiftsGo')}</h2>
+            <div className="space-y-6">
               {[
-                { label: t('give.a1'), pct: 45, color: '#1E3A6D' },
-                { label: t('give.a2'), pct: 25, color: '#0F5C42' },
-                { label: t('give.a3'), pct: 18, color: '#C9A24B' },
-                { label: t('give.a4'), pct: 12, color: '#6B1E2B' },
+                { icon: '⛪', title: t('give.a1'), desc: 'Worship, ministry programmes, and pastoral care across the parish.' },
+                { icon: '🤝', title: t('give.a2'), desc: 'Supporting families, orphans, and vulnerable communities in Berea and beyond.' },
+                { icon: '🏗', title: t('give.a3'), desc: 'Maintaining our church buildings and grounds for future generations.' },
+                { icon: '🌍', title: t('give.a4'), desc: 'Supporting the Diocese of Thika and mission work across Kenya.' },
               ].map((item) => (
-                <div key={item.label}>
-                  <div className="flex justify-between mb-1.5">
-                    <span className="text-sm" style={{ color: '#22201D', fontFamily: 'Inter, sans-serif' }}>{item.label}</span>
-                    <span className="text-sm font-semibold" style={{ color: item.color, fontFamily: 'Inter, sans-serif' }}>{item.pct}%</span>
+                <div key={item.title} className="flex gap-4">
+                  <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center text-xl" style={{ background: 'rgba(201,162,75,0.1)', borderRadius: 8 }}>
+                    {item.icon}
                   </div>
-                  <div className="h-1.5" style={{ background: '#E8E5E0' }}>
-                    <div className="h-full transition-all" style={{ background: item.color, width: `${item.pct}%` }} />
+                  <div>
+                    <div className="font-display text-lg font-600 mb-1" style={{ color: '#22201D' }}>{item.title}</div>
+                    <div className="text-sm leading-relaxed" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif' }}>{item.desc}</div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="mt-10 p-6" style={{ background: '#22201D' }}>
-              <div className="font-display text-xl italic font-300 mb-3" style={{ color: '#F7F5F1' }}>
-                {t('give.proverbsQuote')}
+            <div className="mt-10 p-6" style={{ background: '#22201D', borderRadius: 12 }}>
+              <div className="font-display text-xl italic font-300 mb-3" style={{ color: '#F7F5F1', lineHeight: 1.4 }}>
+                &ldquo;{t('give.proverbsQuote')}&rdquo;
               </div>
-              <div className="text-xs uppercase tracking-widest" style={{ color: '#C9A24B', fontFamily: 'Inter, sans-serif' }}>{t('give.proverbsVerse')}</div>
+              <div className="text-xs uppercase tracking-widest" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
+                {t('give.proverbsVerse')}
+              </div>
             </div>
           </div>
         </div>
@@ -1322,10 +1579,10 @@ function GivePage() {
 function EventsPage() {
   const { t } = useI18n()
   const events = [
-    { date: 'Aug 3', day: 'sun', title: t('events.e1'), time: '8:00 AM & 10:30 AM', tag: t('events.tagWorship'), color: '#1B4CE0' },
+    { date: 'Aug 3', day: 'sun', title: t('events.e1'), time: '8:00 AM & 10:45 AM', tag: t('events.tagWorship'), color: '#1B4CE0' },
     { date: 'Aug 6', day: 'wed', title: t('events.e2'), time: '6:00 PM', tag: t('events.tagStudy'), color: '#0F5C42' },
     { date: 'Aug 9', day: 'sat', title: t('events.e3'), time: '10:00 AM', tag: t('events.tagCommunity'), color: '#C4432B' },
-    { date: 'Aug 10', day: 'sun', title: t('events.e4'), time: '10:30 AM', tag: t('events.tagYouth'), color: '#E8A93B' },
+    { date: 'Aug 10', day: 'sun', title: t('events.e4'), time: '10:45 AM', tag: t('events.tagYouth'), color: '#E8A93B' },
     { date: 'Aug 15', day: 'fri', title: t('events.e5'), time: '7:00 AM', tag: t('events.tagMen'), color: '#1E3A6D' },
     { date: 'Aug 17', day: 'sun', title: t('events.e6'), time: '12:00 PM', tag: t('events.tagFormation'), color: '#6B1E2B' },
     { date: 'Aug 23', day: 'sat', title: t('events.e7'), time: '9:00 AM', tag: t('events.tagOutreach'), color: '#0F5C42' },
@@ -1376,7 +1633,7 @@ function EventsPage() {
 
 // ─── MINISTRIES PAGE ─────────────────────────────────────────────────────────
 
-function MinistriesPage({ setPage }: { setPage: (p: Page) => void }) {
+function MinistriesPage({ go }: { go: (p: Page) => void }) {
   const { t } = useI18n()
   const ministries = [
     {
@@ -1384,7 +1641,7 @@ function MinistriesPage({ setPage }: { setPage: (p: Page) => void }) {
       subtitle: t('ministries.m1Sub'),
       lead: 'Dea. Grace Wanjiku',
       page: 'youth' as Page,
-      img: 'assets/images/youth/youth-01.jpg',
+      img: 'assets/images/youth/youth-01.webp',
       color: '#E8A93B',
       tag: t('ministries.tagYouth'),
       desc: t('ministries.m1Desc'),
@@ -1395,7 +1652,7 @@ function MinistriesPage({ setPage }: { setPage: (p: Page) => void }) {
       subtitle: t('ministries.m2Sub'),
       lead: 'Bro. Joseph Maina',
       page: 'kama' as Page,
-      img: 'assets/images/kama.jpg',
+      img: 'assets/images/kama.webp',
       color: '#1E3A6D',
       tag: t('ministries.tagKAMA'),
       desc: t('ministries.m2Desc'),
@@ -1406,7 +1663,7 @@ function MinistriesPage({ setPage }: { setPage: (p: Page) => void }) {
       subtitle: t('ministries.m3Sub'),
       lead: 'Mrs. Ruth Njoroge',
       page: 'mothers-union' as Page,
-      img: 'assets/images/mothers-union.jpg',
+      img: 'assets/images/mothers-union.webp',
       color: '#6B1E2B',
       tag: t('ministries.tagMothers'),
       desc: t('ministries.m3Desc'),
@@ -1417,7 +1674,7 @@ function MinistriesPage({ setPage }: { setPage: (p: Page) => void }) {
       subtitle: t('ministries.m4Sub'),
       lead: 'Sis. Anne Kamau',
       page: 'sunday-school' as Page,
-      img: 'assets/images/general/congregation-02.jpg',
+      img: 'assets/images/general/sunday-school-05.webp',
       color: '#1B4CE0',
       tag: t('ministries.tagKids'),
       desc: t('ministries.m4Desc'),
@@ -1427,8 +1684,8 @@ function MinistriesPage({ setPage }: { setPage: (p: Page) => void }) {
       title: t('ministries.m5Title'),
       subtitle: t('ministries.m5Sub'),
       lead: 'Mr. David Ochieng',
-      page: 'ministries' as Page,
-      img: 'assets/images/choir/choir-01.jpg',
+      page: 'choir' as Page,
+      img: 'assets/images/choir/choir-01.webp',
       color: '#C4432B',
       tag: t('ministries.tagWorship'),
       desc: t('ministries.m5Desc'),
@@ -1438,8 +1695,8 @@ function MinistriesPage({ setPage }: { setPage: (p: Page) => void }) {
       title: t('ministries.m6Title'),
       subtitle: t('ministries.m6Sub'),
       lead: 'Rev. Samuel Mwangi',
-      page: 'ministries' as Page,
-      img: 'assets/images/youth/youth-05.jpg',
+      page: 'outreach' as Page,
+      img: 'assets/images/general/outreach-09.webp',
       color: '#0F5C42',
       tag: t('ministries.tagService'),
       desc: t('ministries.m6Desc'),
@@ -1485,7 +1742,7 @@ function MinistriesPage({ setPage }: { setPage: (p: Page) => void }) {
               {featured.desc}
             </p>
             <button
-              onClick={() => { setPage(featured.page); window.scrollTo(0, 0) }}
+              onClick={() => { go(featured.page); window.scrollTo(0, 0) }}
               className="px-6 py-3 text-sm font-semibold uppercase tracking-wider transition-all hover:opacity-90"
               style={{ background: '#E8A93B', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
             >
@@ -1499,7 +1756,7 @@ function MinistriesPage({ setPage }: { setPage: (p: Page) => void }) {
           {rest.map((m) => (
             <button
               key={m.title}
-              onClick={() => { setPage(m.page); window.scrollTo(0, 0) }}
+              onClick={() => { go(m.page); window.scrollTo(0, 0) }}
               className="group overflow-hidden cursor-pointer transition-all hover:shadow-lg glass-light-subtle text-left"
             >
               <div className="relative h-48 overflow-hidden" style={{ background: '#E8E5E0' }}>
@@ -1529,16 +1786,16 @@ function MinistriesPage({ setPage }: { setPage: (p: Page) => void }) {
         <h2 className="font-display text-3xl md:text-4xl font-600 mb-8" style={{ color: '#22201D' }}>Choir & Worship — In Song</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="glass-photo-frame aspect-square">
-            <img src="assets/images/choir/choir-02.jpg" alt="Choir member" loading="lazy" className="w-full h-full object-cover" />
+            <img src="assets/images/choir/choir-02.webp" alt="Choir member" loading="lazy" className="w-full h-full object-cover" />
           </div>
           <div className="glass-photo-frame aspect-square">
-            <img src="assets/images/choir/choir-03.jpg" alt="Choir member" loading="lazy" className="w-full h-full object-cover" />
+            <img src="assets/images/choir/choir-03.webp" alt="Choir member" loading="lazy" className="w-full h-full object-cover" />
           </div>
           <div className="glass-photo-frame aspect-square">
-            <img src="assets/images/choir/choir-04.jpg" alt="Choir member" loading="lazy" className="w-full h-full object-cover" />
+            <img src="assets/images/choir/choir-04.webp" alt="Choir member" loading="lazy" className="w-full h-full object-cover" />
           </div>
           <div className="glass-photo-frame aspect-square">
-            <img src="assets/images/choir/choir-01.jpg" alt="Choir member" loading="lazy" className="w-full h-full object-cover" />
+            <img src="assets/images/choir/choir-01.webp" alt="Choir member" loading="lazy" className="w-full h-full object-cover" />
           </div>
         </div>
       </div>
@@ -1591,7 +1848,7 @@ function MinistryInfoRow({ label, value }: { label: string; value: string }) {
   )
 }
 
-function MinistryJoinCTA({ page, setPage }: { page: Page; setPage: (p: Page) => void }) {
+function MinistryJoinCTA({ page, go }: { page: Page; go: (p: Page) => void }) {
   const { t } = useI18n()
   return (
     <div className="relative overflow-hidden py-16 md:py-20">
@@ -1603,14 +1860,14 @@ function MinistryJoinCTA({ page, setPage }: { page: Page; setPage: (p: Page) => 
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
-            onClick={() => { setPage('contact'); window.scrollTo(0, 0) }}
+            onClick={() => { go('contact'); window.scrollTo(0, 0) }}
             className="px-7 py-4 text-sm font-semibold uppercase tracking-wider"
             style={{ background: '#F7F5F1', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
           >
             {t('min.contactUs')}
           </button>
           <button
-            onClick={() => { setPage('plan-visit'); window.scrollTo(0, 0) }}
+            onClick={() => { go('plan-visit'); window.scrollTo(0, 0) }}
             className="px-7 py-4 text-sm font-semibold uppercase tracking-wider"
             style={{ border: '1px solid rgba(247,245,241,0.4)', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
           >
@@ -1622,17 +1879,29 @@ function MinistryJoinCTA({ page, setPage }: { page: Page; setPage: (p: Page) => 
   )
 }
 
-function YouthPage({ setPage }: { setPage: (p: Page) => void }) {
+function YouthPage({ go }: { go: (p: Page) => void }) {
   const { t } = useI18n()
   const activities = [
-    { img: 'assets/images/youth/youth-01.jpg', alt: 'Youth group gathered for a Saturday worship rehearsal' },
-    { img: 'assets/images/youth/youth-03.jpg', alt: 'Young people singing together during fellowship' },
-    { img: 'assets/images/youth/youth-05.jpg', alt: 'Youth ministry volunteers at a community service day' },
-    { img: 'assets/images/youth/youth-07.jpg', alt: 'Youth enjoying a group activity and games' },
-    { img: 'assets/images/youth/youth-09.jpg', alt: 'Teens studying scripture during Friday fellowship' },
-    { img: 'assets/images/youth/youth-11.jpg', alt: 'Youth camp morning devotion outside' },
-    { img: 'assets/images/youth/youth-13.jpg', alt: 'Youth ministry small group discussion' },
-    { img: 'assets/images/youth/youth-15.jpg', alt: 'Youth celebrating after a service project' },
+    { img: 'assets/images/youth/youth-01.webp', alt: 'Youth group gathered for a Saturday worship rehearsal' },
+    { img: 'assets/images/youth/youth-03.webp', alt: 'Young people singing together during fellowship' },
+    { img: 'assets/images/youth/youth-05.webp', alt: 'Youth ministry volunteers at a community service day' },
+    { img: 'assets/images/youth/youth-07.webp', alt: 'Youth enjoying a group activity and games' },
+    { img: 'assets/images/youth/youth-09.webp', alt: 'Teens studying scripture during Friday fellowship' },
+    { img: 'assets/images/youth/youth-11.webp', alt: 'Youth camp morning devotion outside' },
+    { img: 'assets/images/youth/youth-13.webp', alt: 'Youth ministry small group discussion' },
+    { img: 'assets/images/youth/youth-15.webp', alt: 'Youth celebrating after a service project' },
+    { img: 'assets/images/youth/youth-17.webp', alt: 'Youth fellowship activity' },
+    { img: 'assets/images/youth/youth-19.webp', alt: 'Youth worship team' },
+    { img: 'assets/images/youth/youth-21.webp', alt: 'Youth camp group photo' },
+    { img: 'assets/images/youth/youth-23.webp', alt: 'Youth community service' },
+    { img: 'assets/images/youth/youth-25.webp', alt: 'Youth Bible study' },
+    { img: 'assets/images/youth/youth-27.webp', alt: 'Youth fellowship gathering' },
+    { img: 'assets/images/youth/youth-29.webp', alt: 'Youth ministry event' },
+    { img: 'assets/images/youth/youth-31.webp', alt: 'Youth celebration' },
+    { img: 'assets/images/youth/youth-33.webp', alt: 'Youth outreach' },
+    { img: 'assets/images/youth/youth-35.webp', alt: 'Youth worship' },
+    { img: 'assets/images/youth/youth-37.webp', alt: 'Youth fellowship' },
+    { img: 'assets/images/youth/youth-39.webp', alt: 'Youth gathering' },
   ]
 
   return (
@@ -1642,7 +1911,7 @@ function YouthPage({ setPage }: { setPage: (p: Page) => void }) {
         title={t('youth.title')}
         subtitle={t('youth.subtitle')}
         color="#E8A93B"
-        image="assets/images/youth/youth-01.jpg"
+        image="assets/images/youth/youth-01.webp"
         imageAlt="Youth ministry group during a Saturday worship rehearsal at ACK Berea Church"
       />
 
@@ -1673,7 +1942,7 @@ function YouthPage({ setPage }: { setPage: (p: Page) => void }) {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="glass-photo-frame aspect-[4/3]">
             <img
-              src="assets/images/kayo.jpg"
+              src="assets/images/kayo.webp"
               alt="KAYO members of ACK Berea Church gathered together"
               loading="lazy"
               className="w-full h-full object-cover"
@@ -1705,13 +1974,27 @@ function YouthPage({ setPage }: { setPage: (p: Page) => void }) {
         </div>
       </div>
 
-      <MinistryJoinCTA page="youth" setPage={setPage} />
+      {/* Youth Videos */}
+      <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-10">
+        <h2 className="font-display text-3xl md:text-4xl font-600 mb-8" style={{ color: '#22201D' }}>{t('youth.videosTitle') || 'Youth Videos'}</h2>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="glass-light-subtle overflow-hidden">
+            <div className="aspect-video" style={{ background: '#1A1814' }}>
+              <video controls preload="metadata" className="w-full h-full object-cover">
+                <source src="assets/videos/youth/youth-video-01.mp4" type="video/mp4" />
+              </video>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <MinistryJoinCTA page="youth" go={go} />
       <div className="bottom-nav-spacer" />
     </div>
   )
 }
 
-function KAMAPage({ setPage }: { setPage: (p: Page) => void }) {
+function KAMAPage({ go }: { go: (p: Page) => void }) {
   const { t } = useI18n()
   const pillars = [
     { num: '01', title: t('kama.p1Title'), body: t('kama.p1Body') },
@@ -1727,7 +2010,7 @@ function KAMAPage({ setPage }: { setPage: (p: Page) => void }) {
         title={t('kama.title')}
         subtitle={t('kama.subtitle')}
         color="#1E3A6D"
-        image="assets/images/kama.jpg"
+        image="assets/images/kama.webp"
         imageAlt="Men of the Kenya Anglican Men Association at ACK Berea Church"
       />
 
@@ -1771,13 +2054,13 @@ function KAMAPage({ setPage }: { setPage: (p: Page) => void }) {
         </div>
       </div>
 
-      <MinistryJoinCTA page="kama" setPage={setPage} />
+      <MinistryJoinCTA page="kama" go={go} />
       <div className="bottom-nav-spacer" />
     </div>
   )
 }
 
-function MothersUnionPage({ setPage }: { setPage: (p: Page) => void }) {
+function MothersUnionPage({ go }: { go: (p: Page) => void }) {
   const { t } = useI18n()
   const focuses = [
     { title: t('mu.f1Title'), body: t('mu.f1Body') },
@@ -1793,7 +2076,7 @@ function MothersUnionPage({ setPage }: { setPage: (p: Page) => void }) {
         title={t('mu.title')}
         subtitle={t('mu.subtitle')}
         color="#6B1E2B"
-        image="assets/images/mothers-union.jpg"
+        image="assets/images/mothers-union.webp"
         imageAlt="Mothers' Union members in worship at ACK Berea Church"
       />
 
@@ -1833,29 +2116,22 @@ function MothersUnionPage({ setPage }: { setPage: (p: Page) => void }) {
       {/* Mothers' Union Photo Gallery */}
       <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-10">
         <h2 className="font-display text-3xl md:text-4xl font-600 mb-8" style={{ color: '#22201D' }}>Mothers' Union — Our Members</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="glass-photo-frame aspect-square">
-            <img src="assets/images/mothers-union/mothers-union-01.jpg" alt="Mothers' Union member" loading="lazy" className="w-full h-full object-cover" />
-          </div>
-          <div className="glass-photo-frame aspect-square">
-            <img src="assets/images/mothers-union/mothers-union-02.jpg" alt="Mothers' Union member" loading="lazy" className="w-full h-full object-cover" />
-          </div>
-          <div className="glass-photo-frame aspect-square">
-            <img src="assets/images/mothers-union/mothers-union-03.jpg" alt="Mothers' Union member" loading="lazy" className="w-full h-full object-cover" />
-          </div>
-          <div className="glass-photo-frame aspect-square">
-            <img src="assets/images/mothers-union/mothers-union-04.jpg" alt="Mothers' Union member" loading="lazy" className="w-full h-full object-cover" />
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[1,2,3,4,5,6,7,8,9,10,11,12].map(n => (
+            <div key={n} className="glass-photo-frame aspect-square">
+              <img src={`assets/images/mothers-union/mothers-union-${n.toString().padStart(2,'0')}.webp`} alt="Mothers' Union member" loading="lazy" className="w-full h-full object-cover" />
+            </div>
+          ))}
         </div>
       </div>
 
-      <MinistryJoinCTA page="mothers-union" setPage={setPage} />
+      <MinistryJoinCTA page="mothers-union" go={go} />
       <div className="bottom-nav-spacer" />
     </div>
   )
 }
 
-function SundaySchoolPage({ setPage }: { setPage: (p: Page) => void }) {
+function SundaySchoolPage({ go }: { go: (p: Page) => void }) {
   const classes = [
     { title: 'Beginners', age: 'Ages 3–5', body: 'Songs, stories, and play in a safe, loving environment.' },
     { title: 'Juniors', age: 'Ages 6–8', body: 'Bible stories, memory verses, and fun group activities.' },
@@ -1869,7 +2145,7 @@ function SundaySchoolPage({ setPage }: { setPage: (p: Page) => void }) {
         title="The Sunday School Ministry"
         subtitle="Joyful, Bible-centred learning for children aged 3–12 every Sunday morning — songs, stories, crafts, and trained facilitators."
         color="#1B4CE0"
-        image="assets/images/general/congregation-02.jpg"
+        image="assets/images/general/sunday-school-05.webp"
         imageAlt="Children of the Sunday School ministry at ACK Berea Church"
       />
 
@@ -1907,7 +2183,268 @@ function SundaySchoolPage({ setPage }: { setPage: (p: Page) => void }) {
         </div>
       </div>
 
-      <MinistryJoinCTA page="sunday-school" setPage={setPage} />
+      {/* Sunday School Photo Gallery */}
+      <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-10">
+        <h2 className="font-display text-3xl md:text-4xl font-600 mb-8" style={{ color: '#22201D' }}>Sunday School — In Action</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[2,3,4,5,6,7,8].map(n => (
+            <div key={n} className="glass-photo-frame aspect-square">
+              <img src={`assets/images/general/sunday-school-${n.toString().padStart(2,'0')}.webp`} alt="Sunday School activity" loading="lazy" className="w-full h-full object-cover" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Sunday School Videos */}
+      <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-10">
+        <h2 className="font-display text-3xl md:text-4xl font-600 mb-8" style={{ color: '#22201D' }}>Sunday School — Videos</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1,2,3,4,5].map(n => (
+            <div key={n} className="glass-light-subtle overflow-hidden">
+              <div className="aspect-video" style={{ background: '#1A1814' }}>
+                <video controls preload="metadata" className="w-full h-full object-cover">
+                  <source src={`assets/videos/sunday-school/sunday-school-video-${n.toString().padStart(2,'0')}.mp4`} type="video/mp4" />
+                </video>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <MinistryJoinCTA page="sunday-school" go={go} />
+      <div className="bottom-nav-spacer" />
+    </div>
+  )
+}
+
+// ─── COMMUNITY OUTREACH PAGE ─────────────────────────────────────────────────
+
+function OutreachPage({ go }: { go: (p: Page) => void }) {
+  const photos = [
+    'assets/images/general/outreach-01.webp',
+    'assets/images/general/outreach-02.webp',
+    'assets/images/general/outreach-03.webp',
+    'assets/images/general/outreach-04.webp',
+    'assets/images/general/outreach-05.webp',
+    'assets/images/general/outreach-06.webp',
+    'assets/images/general/outreach-07.webp',
+    'assets/images/general/outreach-08.webp',
+    'assets/images/general/outreach-09.webp',
+    'assets/images/general/outreach-10.webp',
+  ]
+
+  return (
+    <div className="page-fade" style={{ background: '#F7F5F1', minHeight: '100vh' }}>
+      {/* Hero */}
+      <div className="relative pt-24 pb-16 px-6 md:px-10 overflow-hidden" style={{ background: '#22201D' }}>
+        <div className="absolute inset-0 chromatic-gradient opacity-30" />
+        <img src="assets/images/logo/ack-crest.png" alt="" aria-hidden="true" className="absolute right-8 top-1/2 -translate-y-1/2 w-24 md:w-40 opacity-25 hidden sm:block" />
+        <div className="relative max-w-screen-xl mx-auto">
+          <div className="text-xs uppercase tracking-[0.2em] mb-4" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
+            Serving our neighbours
+          </div>
+          <h1 className="font-display mb-6" style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 700, lineHeight: 1.0, color: '#F7F5F1', letterSpacing: '-0.02em' }}>
+            Community<br /><em>Outreach</em>
+          </h1>
+          <p className="text-base max-w-lg" style={{ color: 'rgba(247,245,241,0.7)', fontFamily: 'Inter, sans-serif' }}>
+            Putting faith into action — visiting the sick, feeding the hungry, and caring for the vulnerable in our community.
+          </p>
+        </div>
+      </div>
+
+      {/* About */}
+      <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-16 md:py-20">
+        <div className="grid md:grid-cols-2 gap-12 items-start">
+          <div>
+            <h2 className="font-display text-3xl md:text-4xl font-600 mb-6" style={{ color: '#22201D', lineHeight: 1.1 }}>
+              Faith in Action
+            </h2>
+            <p className="text-base leading-relaxed mb-4" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif', maxWidth: '56ch' }}>
+              At ACK Berea Church, outreach is at the heart of our mission. We believe that the Gospel compels us to love and serve our neighbours — especially the most vulnerable.
+            </p>
+            <p className="text-base leading-relaxed mb-4" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif', maxWidth: '56ch' }}>
+              Through regular visits to hospitals, orphanages, and homes for the elderly, our outreach teams bring hope, practical support, and the love of Christ to those in need.
+            </p>
+            <p className="text-base leading-relaxed" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif', maxWidth: '56ch' }}>
+              We also run food distribution drives, support education for underprivileged children, and partner with local organisations to address poverty and inequality in our community.
+            </p>
+          </div>
+          <div>
+            <div className="glass-light-subtle p-8">
+              <h3 className="font-display text-xl font-600 mb-6" style={{ color: '#22201D' }}>What We Do</h3>
+              {[
+                { icon: '🏥', title: 'Hospital Visits', desc: 'Regular visits to hospitals and homes for the sick and elderly.' },
+                { icon: '🍲', title: 'Food Distribution', desc: 'Providing meals and food packages to families in need.' },
+                { icon: '📚', title: 'Education Support', desc: 'Sponsoring school fees and supplies for underprivileged children.' },
+                { icon: '🏠', title: 'Orphanage Visits', desc: 'Spending time with and supporting children in orphanages.' },
+                { icon: '🤝', title: 'Community Partnerships', desc: 'Working with local organisations to address systemic poverty.' },
+                { icon: '⛪', title: 'Church Planting', desc: 'Supporting mission work and new congregations in the diocese.' },
+              ].map((item) => (
+                <div key={item.title} className="flex gap-4 py-4" style={{ borderBottom: '1px solid rgba(184,178,168,0.2)' }}>
+                  <div className="text-xl flex-shrink-0">{item.icon}</div>
+                  <div>
+                    <div className="text-sm font-semibold mb-0.5" style={{ color: '#22201D', fontFamily: 'Inter, sans-serif' }}>{item.title}</div>
+                    <div className="text-sm" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif' }}>{item.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Photo Gallery */}
+      <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-10">
+        <h2 className="font-display text-3xl md:text-4xl font-600 mb-8" style={{ color: '#22201D' }}>Outreach in Action</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {photos.map((img, i) => (
+            <div key={i} className="glass-photo-frame aspect-square">
+              <img src={img} alt={`Community outreach activity ${i + 1}`} loading="lazy" className="w-full h-full object-cover" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-16">
+        <div className="p-8 md:p-12 text-center" style={{ background: '#22201D', borderRadius: 12 }}>
+          <h2 className="font-display text-2xl md:text-3xl font-600 mb-4" style={{ color: '#F7F5F1' }}>Get Involved</h2>
+          <p className="text-sm mb-6 max-w-md mx-auto" style={{ color: 'rgba(247,245,241,0.7)', fontFamily: 'Inter, sans-serif' }}>
+            Want to join our outreach teams? We welcome volunteers for hospital visits, food drives, and community service projects.
+          </p>
+          <button
+            onClick={() => go('contact')}
+            className="px-7 py-3 text-sm font-semibold uppercase tracking-wider transition-all hover:opacity-90"
+            style={{ background: '#C9A24B', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
+          >
+            Contact Us
+          </button>
+        </div>
+      </div>
+
+      <div className="bottom-nav-spacer" />
+    </div>
+  )
+}
+
+// ─── CHOIR & WORSHIP PAGE ────────────────────────────────────────────────────
+
+function ChoirPage({ go }: { go: (p: Page) => void }) {
+  const photos = [
+    'assets/images/choir/choir-01.webp',
+    'assets/images/choir/choir-02.webp',
+    'assets/images/choir/choir-03.webp',
+    'assets/images/choir/choir-04.webp',
+  ]
+
+  return (
+    <div className="page-fade" style={{ background: '#F7F5F1', minHeight: '100vh' }}>
+      {/* Hero */}
+      <div className="relative pt-24 pb-16 px-6 md:px-10 overflow-hidden" style={{ background: '#22201D' }}>
+        <div className="absolute inset-0 chromatic-gradient opacity-30" />
+        <img src="assets/images/logo/ack-crest.png" alt="" aria-hidden="true" className="absolute right-8 top-1/2 -translate-y-1/2 w-24 md:w-40 opacity-25 hidden sm:block" />
+        <div className="relative max-w-screen-xl mx-auto">
+          <div className="text-xs uppercase tracking-[0.2em] mb-4" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>
+            Leading the congregation in worship
+          </div>
+          <h1 className="font-display mb-6" style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 700, lineHeight: 1.0, color: '#F7F5F1', letterSpacing: '-0.02em' }}>
+            Choir &<br /><em>Worship</em>
+          </h1>
+          <p className="text-base max-w-lg" style={{ color: 'rgba(247,245,241,0.7)', fontFamily: 'Inter, sans-serif' }}>
+            Voices, instruments, and a heart for excellence — leading our parish in praise every Sunday.
+          </p>
+        </div>
+      </div>
+
+      {/* About */}
+      <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-16 md:py-20">
+        <div className="grid md:grid-cols-2 gap-12 items-start">
+          <div>
+            <h2 className="font-display text-3xl md:text-4xl font-600 mb-6" style={{ color: '#22201D', lineHeight: 1.1 }}>
+              Worship Through Song
+            </h2>
+            <p className="text-base leading-relaxed mb-4" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif', maxWidth: '56ch' }}>
+              The Choir &amp; Worship Ministry at ACK Berea Church is dedicated to leading the congregation into the presence of God through music. Our team of singers and musicians prepare weekly to deliver heartfelt, excellence-driven worship during Sunday services.
+            </p>
+            <p className="text-base leading-relaxed mb-4" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif', maxWidth: '56ch' }}>
+              We blend traditional Anglican hymns with contemporary worship songs, creating a rich musical experience that speaks to every generation. Whether you sing, play an instrument, or have a passion for technical production, there is a place for you.
+            </p>
+            <p className="text-base leading-relaxed" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif', maxWidth: '56ch' }}>
+              Our vision is to create an atmosphere where people encounter God through authentic, Spirit-led worship that glorifies Him and edifies the church.
+            </p>
+          </div>
+          <div>
+            <div className="glass-light-subtle p-8">
+              <h3 className="font-display text-xl font-600 mb-6" style={{ color: '#22201D' }}>Ministry Info</h3>
+              {[
+                { label: 'Choir Practice', value: 'Sunday · 8:00 AM – 10:00 AM' },
+                { label: 'Sunday Worship', value: '8:00 AM & 10:45 AM Services' },
+                { label: 'Led By', value: 'Mr. David Ochieng' },
+                { label: 'Open To', value: 'All ages — everyone welcome' },
+                { label: 'Location', value: 'Choir Room' },
+              ].map((item) => (
+                <div key={item.label} className="flex gap-4 py-3" style={{ borderBottom: '1px solid rgba(184,178,168,0.2)' }}>
+                  <div className="text-xs uppercase tracking-widest w-28 flex-shrink-0 pt-0.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{item.label}</div>
+                  <div className="text-sm" style={{ color: '#22201D', fontFamily: 'Inter, sans-serif' }}>{item.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* What We Offer */}
+      <div className="py-16" style={{ background: '#22201D' }}>
+        <div className="max-w-screen-xl mx-auto px-6 md:px-10">
+          <h2 className="font-display text-3xl font-600 mb-8" style={{ color: '#F7F5F1' }}>What We Offer</h2>
+          <div className="grid md:grid-cols-3 gap-4">
+            {[
+              { icon: '🎵', title: 'Sunday Worship', desc: 'Leading both services with a blend of hymns and contemporary worship songs.' },
+              { icon: '🎹', title: 'Music Training', desc: 'Voice coaching, instrument lessons, and music theory for all skill levels.' },
+              { icon: '🎤', title: 'Special Events', desc: 'Easter, Christmas, and other seasonal performances and concerts.' },
+              { icon: '👥', title: 'Fellowship', desc: 'Building community through music, rehearsals, and shared meals.' },
+              { icon: '📹', title: 'Media & Tech', desc: 'Sound engineering, live streaming, and visual production support.' },
+              { icon: '🙏', title: 'Prayer & Devotion', desc: 'Weekly devotions and prayer sessions for the worship team.' },
+            ].map((item) => (
+              <div key={item.title} className="p-6" style={{ background: 'rgba(247,245,241,0.06)', border: '1px solid rgba(247,245,241,0.1)', borderRadius: 12 }}>
+                <div className="text-2xl mb-3">{item.icon}</div>
+                <div className="font-display text-lg font-600 mb-2" style={{ color: '#F7F5F1' }}>{item.title}</div>
+                <div className="text-sm leading-relaxed" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{item.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Photo Gallery */}
+      <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-16">
+        <h2 className="font-display text-3xl md:text-4xl font-600 mb-8" style={{ color: '#22201D' }}>In the Life of Worship</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {photos.map((img, i) => (
+            <div key={i} className="glass-photo-frame aspect-square">
+              <img src={img} alt={`Choir worship ${i + 1}`} loading="lazy" className="w-full h-full object-cover" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-16">
+        <div className="p-8 md:p-12 text-center" style={{ background: '#22201D', borderRadius: 12 }}>
+          <h2 className="font-display text-2xl md:text-3xl font-600 mb-4" style={{ color: '#F7F5F1' }}>Join the Choir</h2>
+          <p className="text-sm mb-6 max-w-md mx-auto" style={{ color: 'rgba(247,245,241,0.7)', fontFamily: 'Inter, sans-serif' }}>
+            No audition required — just a willing heart. Come to any Sunday practice at 8:00 AM and see if it feels like home.
+          </p>
+          <button
+            onClick={() => go('contact')}
+            className="px-7 py-3 text-sm font-semibold uppercase tracking-wider transition-all hover:opacity-90"
+            style={{ background: '#C9A24B', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
+          >
+            Contact Us
+          </button>
+        </div>
+      </div>
+
       <div className="bottom-nav-spacer" />
     </div>
   )
@@ -1917,17 +2454,17 @@ function SundaySchoolPage({ setPage }: { setPage: (p: Page) => void }) {
 
 function ServiceTimesPage() {
   const services = [
-    { day: 'Sunday', time: '8:00 AM', type: 'Holy Communion', color: '#0F5C42' },
-    { day: 'Sunday', time: '10:30 AM', type: 'Family Service', color: '#1E3A6D' },
-    { day: 'Wednesday', time: '6:00 PM', type: 'Midweek Service & Bible Study', color: '#6B1E2B' },
-    { day: 'Friday', time: '6:00 PM', type: 'Youth Fellowship', color: '#E8A93B' },
-    { day: 'Saturday', time: '9:00 AM', type: 'Choir & Worship Rehearsal', color: '#1B4CE0' },
+    { day: 'Sunday', time: '8:00 AM', timeEnd: '10:30 AM', type: 'English Service', color: '#0F5C42' },
+    { day: 'Sunday', time: '10:45 AM', timeEnd: '12:30 PM', type: 'Second Service', color: '#1E3A6D' },
+    { day: 'Saturday', time: '2:00 AM', timeEnd: '5:00 AM', type: 'Praise & Worship', color: '#6B1E2B' },
+    { day: 'Sunday', time: '8:00 AM', timeEnd: '10:00 AM', type: 'Choir Practice', color: '#1B4CE0' },
+    { day: 'Weekly', time: '6:00 PM', timeEnd: '7:00 PM', type: 'Prayer Cell Groups', color: '#E8A93B' },
   ]
 
   const parking = [
     { icon: '⌂', title: 'On-Site Parking', body: 'Free parking inside the compound. Gates open at 7:30 AM on Sundays.' },
     { icon: '♿', title: 'Accessible Spaces', body: 'Reserved parking and ramp access near the main entrance.' },
-    { icon: '✆', title: 'Boda-Boda & Drop-Off', body: 'Drop-off zone on the Tola Road side — easy for riders and drivers.' },
+    { icon: '✆', title: 'Boda-Boda & Drop-Off', body: 'Drop-off zone on the Weteithie Road side — easy for riders and drivers.' },
     { icon: '⏱', title: 'Peak Arrival', body: 'Arrive by 7:50 AM for the 8:00 AM service to find a spot comfortably.' },
   ]
 
@@ -1954,7 +2491,8 @@ function ServiceTimesPage() {
             <div key={s.type} className="p-6 flex flex-col justify-between min-h-[180px]" style={{ background: s.color, borderRadius: 12 }}>
               <div>
                 <div className="text-[10px] uppercase tracking-[0.2em] mb-1" style={{ color: 'rgba(247,245,241,0.7)', fontFamily: 'Inter, sans-serif' }}>{s.day}</div>
-                <div className="font-display text-3xl font-700" style={{ color: '#F7F5F1' }}>{s.time}</div>
+                <div className="font-display text-2xl font-700" style={{ color: '#F7F5F1' }}>{s.time}</div>
+                <div className="text-xs" style={{ color: 'rgba(247,245,241,0.6)', fontFamily: 'Inter, sans-serif' }}>to {s.timeEnd}</div>
               </div>
               <div className="text-sm" style={{ color: 'rgba(247,245,241,0.9)', fontFamily: 'Inter, sans-serif' }}>{s.type}</div>
             </div>
@@ -1979,11 +2517,11 @@ function ServiceTimesPage() {
           </div>
           <div className="glass-light-subtle p-8 flex flex-col justify-center">
             <SeriesTag label="Find Us" color="#1E3A6D" />
-            <h2 className="font-display text-3xl font-600 mt-4 mb-5" style={{ color: '#22201D' }}>Tola Road, Berea, Nairobi</h2>
+            <h2 className="font-display text-3xl font-600 mt-4 mb-5" style={{ color: '#22201D' }}>Ngoingwa, Weteithie Road</h2>
             <div className="space-y-4">
               {[
-                ['Directions', 'From Juja Road, turn onto Tola Road; the parish compound is 300m on the left.'],
-                ['Public Transport', 'Matatus along the Juja Road route stop within walking distance of the gate.'],
+                ['Directions', 'Located on Ngoingwa, Weteithie Road — 10 minutes off the Super Highway.'],
+                ['Public Transport', 'Matatus and boda-bodas along Weteithie Road drop you near the gate.'],
                 ['Getting Around', 'Our compound has a circular drive — follow the ushers on arrival.'],
               ].map(([label, val]) => (
                 <div key={label} className="flex gap-4 py-3" style={{ borderTop: '1px solid rgba(184,178,168,0.25)' }}>
@@ -2018,7 +2556,7 @@ function ServiceTimesPage() {
 
 // ─── LEADERSHIP PAGE ─────────────────────────────────────────────────────────
 
-function LeadershipPage({ setPage }: { setPage: (p: Page) => void }) {
+function LeadershipPage({ go }: { go: (p: Page) => void }) {
   const team = [
     { name: 'Rev. Samuel Mwangi', role: 'Vicar, ACK Berea Church', initial: 'SM', color: '#1E3A6D' },
     { name: 'Ven. Peter Kamau', role: 'Archdeacon', initial: 'PK', color: '#0F5C42' },
@@ -2051,7 +2589,7 @@ function LeadershipPage({ setPage }: { setPage: (p: Page) => void }) {
       <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-16 md:py-24">
         <div className="grid md:grid-cols-2 gap-12 items-start">
           <div className="glass-photo-frame aspect-[4/5]">
-            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-01.jpg" alt="Rev. Samuel Mwangi, Vicar of ACK Berea Church" loading="lazy" className="w-full h-full object-cover" />
+            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-01.webp" alt="Rev. Samuel Mwangi, Vicar of ACK Berea Church" loading="lazy" className="w-full h-full object-cover" />
           </div>
           <div>
             <span className="regency-rule block mb-5" style={{ borderColor: '#C9A24B' }} />
@@ -2077,33 +2615,14 @@ function LeadershipPage({ setPage }: { setPage: (p: Page) => void }) {
       {/* Rev. Mwangi Photo Gallery */}
       <div className="max-w-screen-xl mx-auto px-6 md:px-10 py-10">
         <h2 className="font-display text-3xl md:text-4xl font-600 mb-8" style={{ color: '#22201D' }}>Rev. Samuel Mwangi — In Service</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[2,3,4,5,6,7,8,9,10,11,12,13].map(n => (
+            <div key={n} className="glass-photo-frame aspect-square">
+              <img src={`assets/images/leadership/rev-mwangi/rev-mwangi-${n.toString().padStart(2,'0')}.webp`} alt="Rev. Samuel Mwangi" loading="lazy" className="w-full h-full object-cover" />
+            </div>
+          ))}
           <div className="glass-photo-frame aspect-square">
-            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-02.jpg" alt="Rev. Samuel Mwangi" loading="lazy" className="w-full h-full object-cover" />
-          </div>
-          <div className="glass-photo-frame aspect-square">
-            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-03.jpg" alt="Rev. Samuel Mwangi" loading="lazy" className="w-full h-full object-cover" />
-          </div>
-          <div className="glass-photo-frame aspect-square">
-            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-baptism.jpg" alt="Rev. Samuel Mwangi baptising a member" loading="lazy" className="w-full h-full object-cover" />
-          </div>
-          <div className="glass-photo-frame aspect-square">
-            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-04.jpg" alt="Rev. Samuel Mwangi" loading="lazy" className="w-full h-full object-cover" />
-          </div>
-          <div className="glass-photo-frame aspect-square">
-            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-05.jpg" alt="Rev. Samuel Mwangi" loading="lazy" className="w-full h-full object-cover" />
-          </div>
-          <div className="glass-photo-frame aspect-square">
-            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-06.jpg" alt="Rev. Samuel Mwangi" loading="lazy" className="w-full h-full object-cover" />
-          </div>
-          <div className="glass-photo-frame aspect-square">
-            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-07.jpg" alt="Rev. Samuel Mwangi" loading="lazy" className="w-full h-full object-cover" />
-          </div>
-          <div className="glass-photo-frame aspect-square">
-            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-08.jpg" alt="Rev. Samuel Mwangi" loading="lazy" className="w-full h-full object-cover" />
-          </div>
-          <div className="glass-photo-frame aspect-square">
-            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-09.jpg" alt="Rev. Samuel Mwangi" loading="lazy" className="w-full h-full object-cover" />
+            <img src="assets/images/leadership/rev-mwangi/rev-mwangi-baptism.webp" alt="Rev. Samuel Mwangi baptising a member" loading="lazy" className="w-full h-full object-cover" />
           </div>
         </div>
       </div>
@@ -2114,7 +2633,7 @@ function LeadershipPage({ setPage }: { setPage: (p: Page) => void }) {
           <h2 className="font-display text-3xl md:text-4xl font-600 mb-8" style={{ color: '#F7F5F1' }}>Shepherds & Servants</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <div className="glass-photo-frame aspect-square">
-              <img src="assets/images/leadership/bishop.jpg" alt="The Bishop of the Diocese of Mount Kenya South" loading="lazy" className="w-full h-full object-cover" />
+              <img src="assets/images/leadership/bishop.webp" alt="The Bishop of the Diocese of Mount Kenya South" loading="lazy" className="w-full h-full object-cover" />
             </div>
             <div className="p-8 md:col-span-1 flex flex-col justify-center" style={{ background: 'rgba(247,245,241,0.06)', border: '1px solid rgba(247,245,241,0.1)', borderRadius: 12 }}>
               <div className="text-[10px] uppercase tracking-[0.2em] mb-2" style={{ color: '#C9A24B', fontFamily: 'Inter, sans-serif' }}>Diocesan Overseer</div>
@@ -2122,7 +2641,7 @@ function LeadershipPage({ setPage }: { setPage: (p: Page) => void }) {
               <div className="text-sm" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Diocese of Mount Kenya South · ACK</div>
             </div>
             <div className="glass-photo-frame aspect-square">
-              <img src="assets/images/general/worship-01.jpg" alt="Worship service at ACK Berea Church" loading="lazy" className="w-full h-full object-cover" />
+              <img src="assets/images/general/worship-01.webp" alt="Worship service at ACK Berea Church" loading="lazy" className="w-full h-full object-cover" />
             </div>
             <div className="p-8 md:col-span-1 flex flex-col justify-center" style={{ background: 'rgba(247,245,241,0.06)', border: '1px solid rgba(247,245,241,0.1)', borderRadius: 12 }}>
               <div className="text-[10px] uppercase tracking-[0.2em] mb-2" style={{ color: '#C9A24B', fontFamily: 'Inter, sans-serif' }}>Parish Leadership</div>
@@ -2149,14 +2668,14 @@ function LeadershipPage({ setPage }: { setPage: (p: Page) => void }) {
         </div>
         <div className="mt-10 flex flex-col sm:flex-row gap-3">
           <button
-            onClick={() => { setPage('get-involved'); window.scrollTo(0, 0) }}
+            onClick={() => { go('get-involved'); window.scrollTo(0, 0) }}
             className="px-7 py-4 text-sm font-semibold uppercase tracking-wider"
             style={{ background: '#1E3A6D', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
           >
             Get Involved
           </button>
           <button
-            onClick={() => { setPage('contact'); window.scrollTo(0, 0) }}
+            onClick={() => { go('contact'); window.scrollTo(0, 0) }}
             className="px-7 py-4 text-sm font-semibold uppercase tracking-wider"
             style={{ border: '1px solid #22201D', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
           >
@@ -2184,6 +2703,32 @@ function GetInvolvedPage() {
   ]
 
   const [sent, setSent] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [volName, setVolName] = useState('')
+  const [volEmail, setVolEmail] = useState('')
+  const [volArea, setVolArea] = useState('Ushering & Welcome')
+  const [volAvailability, setVolAvailability] = useState('')
+
+  const handleVolunteerSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!volName || !volEmail) return
+    setSending(true)
+    try {
+      const res = await fetch(`${API_URL}/api/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'volunteer',
+          data: { name: volName, email: volEmail, area: volArea, availability: volAvailability },
+        }),
+      })
+      if (res.ok) setSent(true)
+    } catch {
+      // silent
+    } finally {
+      setSending(false)
+    }
+  }
 
   return (
     <div className="page-fade" style={{ background: '#F7F5F1', minHeight: '100vh' }}>
@@ -2234,19 +2779,18 @@ function GetInvolvedPage() {
                 <p className="text-sm" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif' }}>We've received your interest and will be in touch soon.</p>
               </div>
             ) : (
-              <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setSent(true) }}>
-                {[
-                  { label: 'Your Name', type: 'text', placeholder: 'Jane Wanjiku' },
-                  { label: 'Email Address', type: 'email', placeholder: 'jane@example.com' },
-                ].map((f) => (
-                  <div key={f.label}>
-                    <div className="text-xs uppercase tracking-widest mb-1.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{f.label}</div>
-                    <input type={f.type} placeholder={f.placeholder} className="w-full px-4 py-3 text-sm outline-none" style={{ border: '1px solid #B8B2A8', background: '#fff', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }} />
-                  </div>
-                ))}
+              <form className="space-y-4" onSubmit={handleVolunteerSubmit}>
+                <div>
+                  <div className="text-xs uppercase tracking-widest mb-1.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Your Name</div>
+                  <input type="text" placeholder="Jane Wanjiku" value={volName} onChange={(e) => setVolName(e.target.value)} required className="w-full px-4 py-3 text-sm outline-none" style={{ border: '1px solid #B8B2A8', background: '#fff', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }} />
+                </div>
+                <div>
+                  <div className="text-xs uppercase tracking-widest mb-1.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Email Address</div>
+                  <input type="email" placeholder="jane@example.com" value={volEmail} onChange={(e) => setVolEmail(e.target.value)} required className="w-full px-4 py-3 text-sm outline-none" style={{ border: '1px solid #B8B2A8', background: '#fff', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }} />
+                </div>
                 <div>
                   <div className="text-xs uppercase tracking-widest mb-1.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Area of Service</div>
-                  <select className="w-full px-4 py-3 text-sm outline-none" style={{ border: '1px solid #B8B2A8', background: '#fff', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}>
+                  <select value={volArea} onChange={(e) => setVolArea(e.target.value)} className="w-full px-4 py-3 text-sm outline-none" style={{ border: '1px solid #B8B2A8', background: '#fff', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}>
                     <option>Ushering & Welcome</option>
                     <option>Choir & Worship</option>
                     <option>Children's Ministry</option>
@@ -2259,10 +2803,10 @@ function GetInvolvedPage() {
                 </div>
                 <div>
                   <div className="text-xs uppercase tracking-widest mb-1.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>When Are You Available?</div>
-                  <textarea rows={3} placeholder="e.g. Sunday mornings and Thursday evenings" className="w-full px-4 py-3 text-sm outline-none resize-none" style={{ border: '1px solid #B8B2A8', background: '#fff', color: '#22201D', fontFamily: 'Inter, sans-serif' }} />
+                  <textarea rows={3} placeholder="e.g. Sunday mornings and Thursday evenings" value={volAvailability} onChange={(e) => setVolAvailability(e.target.value)} className="w-full px-4 py-3 text-sm outline-none resize-none" style={{ border: '1px solid #B8B2A8', background: '#fff', color: '#22201D', fontFamily: 'Inter, sans-serif' }} />
                 </div>
-                <button type="submit" className="w-full py-4 font-semibold uppercase tracking-wider text-sm" style={{ background: '#E8A93B', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 52 }}>
-                  Sign Me Up
+                <button type="submit" disabled={sending} className="w-full py-4 font-semibold uppercase tracking-wider text-sm" style={{ background: '#E8A93B', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 52, opacity: sending ? 0.7 : 1 }}>
+                  {sending ? 'Sending...' : 'Sign Me Up'}
                 </button>
               </form>
             )}
@@ -2279,6 +2823,30 @@ function GetInvolvedPage() {
 function PrayerRequestsPage() {
   const [private_, setPrivate] = useState(true)
   const [sent, setSent] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [prayerName, setPrayerName] = useState('')
+  const [prayerRequest, setPrayerRequest] = useState('')
+
+  const handlePrayerSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!prayerRequest) return
+    setSending(true)
+    try {
+      const res = await fetch(`${API_URL}/api/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'prayer-request',
+          data: { name: prayerName, request: prayerRequest, isPrivate: private_ },
+        }),
+      })
+      if (res.ok) setSent(true)
+    } catch {
+      // silent
+    } finally {
+      setSending(false)
+    }
+  }
 
   return (
     <div className="page-fade relative overflow-hidden" style={{ background: '#F7F5F1', minHeight: '100vh' }}>
@@ -2316,19 +2884,19 @@ function PrayerRequestsPage() {
                 <p className="text-sm" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif' }}>
                   Our prayer team has received your request and will be praying for you.
                 </p>
-                <button onClick={() => setSent(false)} className="mt-8 px-6 py-3 text-xs font-semibold uppercase tracking-wider" style={{ border: '1px solid #22201D', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}>
+                <button onClick={() => { setSent(false); setPrayerName(''); setPrayerRequest('') }} className="mt-8 px-6 py-3 text-xs font-semibold uppercase tracking-wider" style={{ border: '1px solid #22201D', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}>
                   Submit Another Request
                 </button>
               </div>
             ) : (
-              <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); setSent(true) }}>
+              <form className="space-y-5" onSubmit={handlePrayerSubmit}>
                 <div>
                   <div className="text-xs uppercase tracking-widest mb-1.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Your Name (optional)</div>
-                  <input type="text" placeholder="Jane Wanjiku" className="w-full px-4 py-3 text-sm outline-none" style={{ border: '1px solid rgba(184,178,168,0.5)', background: 'rgba(255,255,255,0.7)', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }} />
+                  <input type="text" placeholder="Jane Wanjiku" value={prayerName} onChange={(e) => setPrayerName(e.target.value)} className="w-full px-4 py-3 text-sm outline-none" style={{ border: '1px solid rgba(184,178,168,0.5)', background: 'rgba(255,255,255,0.7)', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }} />
                 </div>
                 <div>
                   <div className="text-xs uppercase tracking-widest mb-1.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Prayer Request</div>
-                  <textarea rows={6} placeholder="Share what you'd like us to pray about…" className="w-full px-4 py-3 text-sm outline-none resize-none" style={{ border: '1px solid rgba(184,178,168,0.5)', background: 'rgba(255,255,255,0.7)', color: '#22201D', fontFamily: 'Inter, sans-serif' }} />
+                  <textarea rows={6} placeholder="Share what you'd like us to pray about…" value={prayerRequest} onChange={(e) => setPrayerRequest(e.target.value)} required className="w-full px-4 py-3 text-sm outline-none resize-none" style={{ border: '1px solid rgba(184,178,168,0.5)', background: 'rgba(255,255,255,0.7)', color: '#22201D', fontFamily: 'Inter, sans-serif' }} />
                 </div>
                 <label className="flex items-start gap-3 cursor-pointer" style={{ minHeight: 44 }}>
                   <input type="checkbox" checked={private_} onChange={(e) => setPrivate(e.target.checked)} className="mt-1 w-4 h-4" style={{ accentColor: '#0F5C42' }} />
@@ -2336,8 +2904,8 @@ function PrayerRequestsPage() {
                     Keep my request private (shared only with the clergy, not the prayer team)
                   </span>
                 </label>
-                <button type="submit" className="w-full py-4 font-semibold uppercase tracking-wider text-sm" style={{ background: '#0F5C42', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 52 }}>
-                  Send Prayer Request
+                <button type="submit" disabled={sending} className="w-full py-4 font-semibold uppercase tracking-wider text-sm" style={{ background: '#0F5C42', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 52, opacity: sending ? 0.7 : 1 }}>
+                  {sending ? 'Sending...' : 'Send Prayer Request'}
                 </button>
               </form>
             )}
@@ -2353,12 +2921,12 @@ function PrayerRequestsPage() {
 
 function NewsPage() {
   const posts = [
-    { title: 'Baptism Sunday — A Day of New Beginnings', category: 'Sacraments', date: 'Jul 20, 2026', color: '#1E3A6D', img: 'assets/images/events/baptism.jpg', read: '4 min read', excerpt: 'Seven souls were welcomed into the household of faith as Rev. Julius administered the sacrament of baptism.' },
-    { title: 'The Easter Vigil & Lamp Lighting', category: 'Seasonal', date: 'Apr 5, 2026', color: '#0F5C42', img: 'assets/images/events/easter-lamp-lighting.jpg', read: '3 min read', excerpt: 'Our candlelit Easter Vigil gathered the parish in darkness and watched the light of Christ rise once more.' },
-    { title: 'Youth Camp 2026 — Photos & Reflections', category: 'Youth', date: 'Aug 1, 2026', color: '#E8A93B', img: 'assets/images/youth/youth-11.jpg', read: '5 min read', excerpt: 'Three days at Lake Naivasha — morning devotions, small groups, and a church family growing closer.' },
-    { title: 'KAMA Monthly Breakfast Fellowship', category: 'KAMA', date: 'Jul 12, 2026', color: '#C4432B', img: 'assets/images/kama.jpg', read: '2 min read', excerpt: 'Men of the parish gathered for breakfast, the Word, and honest conversation around the table.' },
-    { title: "Mothers' Union Service of Dedication", category: 'Mothers\u2019 Union', date: 'Jun 28, 2026', color: '#6B1E2B', img: 'assets/images/mothers-union.jpg', read: '3 min read', excerpt: 'A joyful service as new members were dedicated into the Mothers\u2019 Union of the parish.' },
-    { title: 'Sunday School Fun Day', category: 'Children', date: 'Jun 14, 2026', color: '#6B35C8', img: 'assets/images/general/congregation-01.jpg', read: '2 min read', excerpt: 'Games, songs, and a big lunch — the youngest members of our church had a day to remember.' },
+    { title: 'Baptism Sunday — A Day of New Beginnings', category: 'Sacraments', date: 'Jul 20, 2026', color: '#1E3A6D', img: 'assets/images/events/baptism.webp', read: '4 min read', excerpt: 'Seven souls were welcomed into the household of faith as Rev. Julius administered the sacrament of baptism.' },
+    { title: 'The Easter Vigil & Lamp Lighting', category: 'Seasonal', date: 'Apr 5, 2026', color: '#0F5C42', img: 'assets/images/events/easter-lamp-lighting.webp', read: '3 min read', excerpt: 'Our candlelit Easter Vigil gathered the parish in darkness and watched the light of Christ rise once more.' },
+    { title: 'Youth Camp 2026 — Photos & Reflections', category: 'Youth', date: 'Aug 1, 2026', color: '#E8A93B', img: 'assets/images/youth/youth-11.webp', read: '5 min read', excerpt: 'Three days at Lake Naivasha — morning devotions, small groups, and a church family growing closer.' },
+    { title: 'KAMA Monthly Breakfast Fellowship', category: 'KAMA', date: 'Jul 12, 2026', color: '#C4432B', img: 'assets/images/kama.webp', read: '2 min read', excerpt: 'Men of the parish gathered for breakfast, the Word, and honest conversation around the table.' },
+    { title: "Mothers' Union Service of Dedication", category: 'Mothers\u2019 Union', date: 'Jun 28, 2026', color: '#6B1E2B', img: 'assets/images/mothers-union.webp', read: '3 min read', excerpt: 'A joyful service as new members were dedicated into the Mothers\u2019 Union of the parish.' },
+    { title: 'Sunday School Fun Day', category: 'Children', date: 'Jun 14, 2026', color: '#6B35C8', img: 'assets/images/general/congregation-01.webp', read: '2 min read', excerpt: 'Games, songs, and a big lunch — the youngest members of our church had a day to remember.' },
   ]
 
   const [featured, ...rest] = posts
@@ -2426,34 +2994,51 @@ function NewsPage() {
 
 function GalleryPage() {
   const photos = [
-    { img: 'assets/images/general/worship-01.jpg', alt: 'Congregation singing during worship', cat: 'Worship' },
-    { img: 'assets/images/leadership/rev-mwangi/rev-mwangi-01.jpg', alt: 'Rev. Samuel Mwangi, Vicar', cat: 'Leadership' },
-    { img: 'assets/images/events/baptism-rev-julius.jpg', alt: 'Rev. Julius baptising a new member', cat: 'Sacraments' },
-    { img: 'assets/images/choir/choir-01.jpg', alt: 'Choir member', cat: 'Choir' },
-    { img: 'assets/images/youth/youth-02.jpg', alt: 'Youth worship team in rehearsal', cat: 'Youth' },
-    { img: 'assets/images/mothers-union/mothers-union-01.jpg', alt: "Mothers' Union member", cat: "Mothers' Union" },
-    { img: 'assets/images/events/easter-lamp-lighting-2.jpg', alt: 'Easter vigil lamp lighting', cat: 'Seasonal' },
-    { img: 'assets/images/choir/choir-02.jpg', alt: 'Choir member', cat: 'Choir' },
-    { img: 'assets/images/youth/youth-04.jpg', alt: 'Youth at a group activity', cat: 'Youth' },
-    { img: 'assets/images/general/congregation-02.jpg', alt: 'The congregation at Sunday service', cat: 'Worship' },
-    { img: 'assets/images/mothers-union/mothers-union-02.jpg', alt: "Mothers' Union member", cat: "Mothers' Union" },
-    { img: 'assets/images/leadership/rev-mwangi/rev-mwangi-02.jpg', alt: 'Rev. Samuel Mwangi', cat: 'Leadership' },
-    { img: 'assets/images/youth/youth-06.jpg', alt: 'Youth camp group photo', cat: 'Youth' },
-    { img: 'assets/images/choir/choir-03.jpg', alt: 'Choir member', cat: 'Choir' },
-    { img: 'assets/images/events/rev-julis-lamp-lighting.jpg', alt: 'Rev. Julius lighting the lamp', cat: 'Seasonal' },
-    { img: 'assets/images/mothers-union/mothers-union-03.jpg', alt: "Mothers' Union member", cat: "Mothers' Union" },
-    { img: 'assets/images/kama.jpg', alt: 'KAMA members of ACK Berea Church', cat: 'Fellowships' },
-    { img: 'assets/images/leadership/rev-mwangi/rev-mwangi-03.jpg', alt: 'Rev. Samuel Mwangi baptising', cat: 'Leadership' },
-    { img: 'assets/images/youth/youth-08.jpg', alt: 'Young people enjoying fellowship', cat: 'Youth' },
-    { img: 'assets/images/choir/choir-04.jpg', alt: 'Choir member', cat: 'Choir' },
-    { img: 'assets/images/mothers-union.jpg', alt: "Mothers' Union members gathered", cat: 'Fellowships' },
-    { img: 'assets/images/mothers-union/mothers-union-04.jpg', alt: "Mothers' Union member", cat: "Mothers' Union" },
-    { img: 'assets/images/youth/youth-10.jpg', alt: 'Youth ministry outing', cat: 'Youth' },
-    { img: 'assets/images/leadership/rev-mwangi/rev-mwangi-04.jpg', alt: 'Rev. Samuel Mwangi', cat: 'Leadership' },
-    { img: 'assets/images/youth/youth-12.jpg', alt: 'Youth group study time', cat: 'Youth' },
-    { img: 'assets/images/events/baptism.jpg', alt: 'Baptism service at the font', cat: 'Sacraments' },
-    { img: 'assets/images/general/congregation-01.jpg', alt: 'Worshippers at ACK Berea Church', cat: 'Worship' },
-    { img: 'assets/images/youth/youth-16.jpg', alt: 'Youth celebrating together', cat: 'Youth' },
+    { img: 'assets/images/general/worship-01.webp', alt: 'Congregation singing during worship', cat: 'Worship' },
+    { img: 'assets/images/leadership/rev-mwangi/rev-mwangi-01.webp', alt: 'Rev. Samuel Mwangi, Vicar', cat: 'Leadership' },
+    { img: 'assets/images/events/baptism-rev-julius.webp', alt: 'Rev. Julius baptising a new member', cat: 'Sacraments' },
+    { img: 'assets/images/choir/choir-01.webp', alt: 'Choir member', cat: 'Choir' },
+    { img: 'assets/images/youth/youth-02.webp', alt: 'Youth worship team in rehearsal', cat: 'Youth' },
+    { img: 'assets/images/mothers-union/mothers-union-01.webp', alt: "Mothers' Union member", cat: "Mothers' Union" },
+    { img: 'assets/images/events/easter-lamp-lighting-2.webp', alt: 'Easter vigil lamp lighting', cat: 'Seasonal' },
+    { img: 'assets/images/choir/choir-02.webp', alt: 'Choir member', cat: 'Choir' },
+    { img: 'assets/images/youth/youth-04.webp', alt: 'Youth at a group activity', cat: 'Youth' },
+    { img: 'assets/images/general/congregation-02.webp', alt: 'The congregation at Sunday service', cat: 'Worship' },
+    { img: 'assets/images/mothers-union/mothers-union-02.webp', alt: "Mothers' Union member", cat: "Mothers' Union" },
+    { img: 'assets/images/leadership/rev-mwangi/rev-mwangi-02.webp', alt: 'Rev. Samuel Mwangi', cat: 'Leadership' },
+    { img: 'assets/images/youth/youth-06.webp', alt: 'Youth camp group photo', cat: 'Youth' },
+    { img: 'assets/images/choir/choir-03.webp', alt: 'Choir member', cat: 'Choir' },
+    { img: 'assets/images/events/rev-julis-lamp-lighting.webp', alt: 'Rev. Julius lighting the lamp', cat: 'Seasonal' },
+    { img: 'assets/images/mothers-union/mothers-union-03.webp', alt: "Mothers' Union member", cat: "Mothers' Union" },
+    { img: 'assets/images/kama.webp', alt: 'KAMA members of ACK Berea Church', cat: 'Fellowships' },
+    { img: 'assets/images/leadership/rev-mwangi/rev-mwangi-03.webp', alt: 'Rev. Samuel Mwangi baptising', cat: 'Leadership' },
+    { img: 'assets/images/youth/youth-08.webp', alt: 'Young people enjoying fellowship', cat: 'Youth' },
+    { img: 'assets/images/choir/choir-04.webp', alt: 'Choir member', cat: 'Choir' },
+    { img: 'assets/images/mothers-union.webp', alt: "Mothers' Union members gathered", cat: 'Fellowships' },
+    { img: 'assets/images/mothers-union/mothers-union-04.webp', alt: "Mothers' Union member", cat: "Mothers' Union" },
+    { img: 'assets/images/youth/youth-10.webp', alt: 'Youth ministry outing', cat: 'Youth' },
+    { img: 'assets/images/leadership/rev-mwangi/rev-mwangi-04.webp', alt: 'Rev. Samuel Mwangi', cat: 'Leadership' },
+    { img: 'assets/images/youth/youth-12.webp', alt: 'Youth group study time', cat: 'Youth' },
+    { img: 'assets/images/events/baptism.webp', alt: 'Baptism service at the font', cat: 'Sacraments' },
+    { img: 'assets/images/general/congregation-01.webp', alt: 'Worshippers at ACK Berea Church', cat: 'Worship' },
+    { img: 'assets/images/youth/youth-16.webp', alt: 'Youth celebrating together', cat: 'Youth' },
+    { img: 'assets/images/general/outreach-01.webp', alt: 'Community outreach activity', cat: 'Outreach' },
+    { img: 'assets/images/general/outreach-02.webp', alt: 'Community service', cat: 'Outreach' },
+    { img: 'assets/images/general/outreach-03.webp', alt: 'Outreach program', cat: 'Outreach' },
+    { img: 'assets/images/general/outreach-04.webp', alt: 'Community engagement', cat: 'Outreach' },
+    { img: 'assets/images/general/outreach-05.webp', alt: 'Outreach event', cat: 'Outreach' },
+    { img: 'assets/images/general/outreach-06.webp', alt: 'Community service day', cat: 'Outreach' },
+    { img: 'assets/images/general/outreach-07.webp', alt: 'Outreach ministry', cat: 'Outreach' },
+    { img: 'assets/images/general/outreach-08.webp', alt: 'Community care', cat: 'Outreach' },
+    { img: 'assets/images/general/outreach-09.webp', alt: 'Outreach fellowship', cat: 'Outreach' },
+    { img: 'assets/images/general/outreach-10.webp', alt: 'Community mission', cat: 'Outreach' },
+    { img: 'assets/images/general/sunday-school-02.webp', alt: 'Sunday School activity', cat: 'Sunday School' },
+    { img: 'assets/images/general/sunday-school-03.webp', alt: 'Children in Sunday School', cat: 'Sunday School' },
+    { img: 'assets/images/general/sunday-school-04.webp', alt: 'Sunday School learning', cat: 'Sunday School' },
+    { img: 'assets/images/general/sunday-school-05.webp', alt: 'Sunday School worship', cat: 'Sunday School' },
+    { img: 'assets/images/general/sunday-school-06.webp', alt: 'Sunday School fun', cat: 'Sunday School' },
+    { img: 'assets/images/general/sunday-school-07.webp', alt: 'Sunday School fellowship', cat: 'Sunday School' },
+    { img: 'assets/images/general/sunday-school-08.webp', alt: 'Sunday School celebration', cat: 'Sunday School' },
   ]
 
   const [selected, setSelected] = useState<number | null>(null)
@@ -2522,7 +3107,7 @@ function GalleryPage() {
 
 // ─── FAQ PAGE ────────────────────────────────────────────────────────────────
 
-function FAQPage({ setPage }: { setPage: (p: Page) => void }) {
+function FAQPage({ go }: { go: (p: Page) => void }) {
   const faqs = [
     { q: "What time should I arrive for a service?", a: "We recommend arriving 15 minutes before the service begins. Our ushers will welcome you at the gate and help you find a seat. The 8:00 AM service is the quieter, traditional Holy Communion; the 10:30 AM family service features the choir and children's church." },
     { q: "Do I need to be Anglican to attend?", a: "Not at all. Everyone is warmly welcome. You do not need to be a member, baptised, or Anglican to join us for worship. All baptised Christians are welcome to receive Holy Communion." },
@@ -2548,7 +3133,7 @@ function FAQPage({ setPage }: { setPage: (p: Page) => void }) {
             FAQ
           </h1>
           <p className="text-base" style={{ color: 'rgba(247,245,241,0.7)', fontFamily: 'Inter, sans-serif' }}>
-            Everything first-time visitors ask us most. Still curious? <button onClick={() => { setPage('contact'); window.scrollTo(0, 0) }} className="underline" style={{ color: '#E8A93B' }}>Contact us</button>.
+            Everything first-time visitors ask us most. Still curious? <button onClick={() => { go('contact'); window.scrollTo(0, 0) }} className="underline" style={{ color: '#E8A93B' }}>Contact us</button>.
           </p>
         </div>
       </div>
@@ -2685,6 +3270,24 @@ function SmallGroupsFinderPage() {
 
 function LiveStreamPage() {
   const [live, setLive] = useState(false)
+  const [chatMessage, setChatMessage] = useState('')
+  const [chatSent, setChatSent] = useState(false)
+
+  const handleChatSend = async () => {
+    if (!chatMessage.trim()) return
+    try {
+      await fetch(`${API_URL}/api/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'live-chat', data: { message: chatMessage } }),
+      })
+      setChatSent(true)
+      setChatMessage('')
+      setTimeout(() => setChatSent(false), 3000)
+    } catch {
+      // silent
+    }
+  }
 
   return (
     <div className="page-fade" style={{ background: '#22201D', minHeight: '100vh' }}>
@@ -2716,12 +3319,12 @@ function LiveStreamPage() {
                   <div className="text-center">
                     <div className="text-4xl mb-3" style={{ color: '#F7F5F1' }}>▶</div>
                     <div className="font-display text-2xl font-600" style={{ color: '#F7F5F1' }}>Streaming now</div>
-                    <div className="text-xs uppercase tracking-widest mt-1" style={{ color: 'rgba(247,245,241,0.7)', fontFamily: 'Inter, sans-serif' }}>Sunday · 8:00 AM & 10:30 AM</div>
+                    <div className="text-xs uppercase tracking-widest mt-1" style={{ color: 'rgba(247,245,241,0.7)', fontFamily: 'Inter, sans-serif' }}>Sunday · 8:00 AM & 10:45 AM</div>
                   </div>
                 </div>
               ) : (
                 <>
-                  <img src="assets/images/general/congregation-02.jpg" alt="Live stream poster — Sunday service at ACK Berea Church" className="w-full h-full object-cover" />
+                  <img src="assets/images/general/congregation-02.webp" alt="Live stream poster — Sunday service at ACK Berea Church" className="w-full h-full object-cover" />
                   <button
                     onClick={() => setLive(true)}
                     className="absolute inset-0 flex items-center justify-center cursor-pointer group"
@@ -2737,7 +3340,7 @@ function LiveStreamPage() {
             <div className="mt-4 flex items-center justify-between">
               <div>
                 <div className="font-display text-xl font-600" style={{ color: '#F7F5F1' }}>Sunday Service</div>
-                <div className="text-xs" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Holy Communion · 8:00 AM · ACK Berea Church, Tola Parish</div>
+                <div className="text-xs" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>English Service · 8:00 AM · ACK Berea Church, Tola Parish</div>
               </div>
               <button
                 onClick={() => setLive(false)}
@@ -2768,14 +3371,20 @@ function LiveStreamPage() {
               ))}
             </div>
             <div className="p-4" style={{ borderTop: '1px solid rgba(247,245,241,0.1)' }}>
+              {chatSent && (
+                <div className="text-xs mb-2" style={{ color: '#C9A24B', fontFamily: 'Inter, sans-serif' }}>Message sent!</div>
+              )}
               <div className="flex gap-2">
                 <input
                   type="text"
                   placeholder="Say hello…"
+                  value={chatMessage}
+                  onChange={(e) => setChatMessage(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleChatSend() }}
                   className="flex-1 px-4 py-3 text-sm outline-none"
                   style={{ border: '1px solid rgba(184,178,168,0.3)', background: 'rgba(247,245,241,0.08)', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
                 />
-                <button className="px-5 text-xs font-semibold uppercase tracking-wider" style={{ background: '#C4432B', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 44 }}>
+                <button onClick={handleChatSend} className="px-5 text-xs font-semibold uppercase tracking-wider" style={{ background: '#C4432B', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 44 }}>
                   Send
                 </button>
               </div>
@@ -2786,8 +3395,8 @@ function LiveStreamPage() {
         {/* Schedule strip */}
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { t: '8:00 AM', label: 'Holy Communion' },
-            { t: '10:30 AM', label: 'Family Service' },
+            { t: '8:00 AM', label: 'English Service' },
+            { t: '10:45 AM', label: 'Second Service' },
             { t: '6:00 PM', label: 'Wednesday Bible Study' },
           ].map((s) => (
             <div key={s.label} className="p-6" style={{ background: 'rgba(247,245,241,0.05)', border: '1px solid rgba(247,245,241,0.1)', borderRadius: 12 }}>
@@ -2806,10 +3415,10 @@ function LiveStreamPage() {
 
 function TestimoniesPage() {
   const stories = [
-    { img: 'assets/images/youth/youth-09.jpg', name: 'Brenda W.', role: 'Youth Member', quote: 'Youth fellowship became my second family. I found mentors who prayed with me through school and helped me discover my gifts in the choir.', body: 'When I joined Friday fellowship three years ago, I was shy and unsure of myself. Today I lead worship, serve in media, and I know, without a doubt, that God met me here.' },
-    { img: 'assets/images/general/congregation-01.jpg', name: 'Charles M.', role: 'KAMA Member', quote: 'The men of this parish walked with me when life was heavy. That is church.', body: 'After my business struggled and I pulled away from everything, a KAMA brother called me every single week. They prayed, they listened, and they showed up. It changed how I see fellowship.' },
-    { img: 'assets/images/mothers-union.jpg', name: 'Mama Jane K.', role: 'Mothers\u2019 Union', quote: 'In the Mothers\u2019 Union I found sisters — and a place to serve my community.', body: 'From home visits to caring for widows in Berea, the union gave my hands something faithful to do after my children grew up. The joy I have found here is beyond words.' },
-    { img: 'assets/images/general/congregation-02.jpg', name: 'Daniel & Ruth O.', role: 'Parents', quote: 'Our children run to Sunday School every week. That says everything.', body: 'As new parents in the parish, we wondered if our kids would settle. The Sunday School teachers love them so well that they ask to come early. We grew up too — through the new parents group.' },
+    { img: 'assets/images/youth/youth-09.webp', name: 'Brenda W.', role: 'Youth Member', quote: 'Youth fellowship became my second family. I found mentors who prayed with me through school and helped me discover my gifts in the choir.', body: 'When I joined Friday fellowship three years ago, I was shy and unsure of myself. Today I lead worship, serve in media, and I know, without a doubt, that God met me here.' },
+    { img: 'assets/images/general/congregation-01.webp', name: 'Charles M.', role: 'KAMA Member', quote: 'The men of this parish walked with me when life was heavy. That is church.', body: 'After my business struggled and I pulled away from everything, a KAMA brother called me every single week. They prayed, they listened, and they showed up. It changed how I see fellowship.' },
+    { img: 'assets/images/mothers-union.webp', name: 'Mama Jane K.', role: 'Mothers\u2019 Union', quote: 'In the Mothers\u2019 Union I found sisters — and a place to serve my community.', body: 'From home visits to caring for widows in Berea, the union gave my hands something faithful to do after my children grew up. The joy I have found here is beyond words.' },
+    { img: 'assets/images/general/congregation-02.webp', name: 'Daniel & Ruth O.', role: 'Parents', quote: 'Our children run to Sunday School every week. That says everything.', body: 'As new parents in the parish, we wondered if our kids would settle. The Sunday School teachers love them so well that they ask to come early. We grew up too — through the new parents group.' },
   ]
 
   const [idx, setIdx] = useState(0)
@@ -2883,13 +3492,41 @@ function TestimoniesPage() {
 
 // ─── CONTACT PAGE ────────────────────────────────────────────────────────────
 
-function ContactPage({ setPage }: { setPage: (p: Page) => void }) {
+function ContactPage({ go }: { go: (p: Page) => void }) {
   const staff = [
     { name: 'Rev. Samuel Mwangi', role: 'Vicar', initial: 'SM', color: '#1E3A6D' },
     { name: 'Ven. Peter Kamau', role: 'Archdeacon', initial: 'PK', color: '#0F5C42' },
     { name: 'Dea. Grace Wanjiku', role: 'Youth Deacon', initial: 'GW', color: '#C4432B' },
     { name: 'Bro. Joseph Maina', role: 'Parish Administrator', initial: 'JM', color: '#E8A93B' },
   ]
+
+  const [sent, setSent] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [contactName, setContactName] = useState('')
+  const [contactEmail, setContactEmail] = useState('')
+  const [contactSubject, setContactSubject] = useState('')
+  const [contactMessage, setContactMessage] = useState('')
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!contactName || !contactEmail || !contactMessage) return
+    setSending(true)
+    try {
+      const res = await fetch(`${API_URL}/api/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'contact',
+          data: { name: contactName, email: contactEmail, subject: contactSubject, message: contactMessage },
+        }),
+      })
+      if (res.ok) setSent(true)
+    } catch {
+      // silent
+    } finally {
+      setSending(false)
+    }
+  }
 
   return (
     <div className="page-fade" style={{ background: '#F7F5F1', minHeight: '100vh' }}>
@@ -2913,7 +3550,7 @@ function ContactPage({ setPage }: { setPage: (p: Page) => void }) {
           ] as [string, Page][]).map(([label, p]) => (
             <button
               key={p}
-              onClick={() => { setPage(p); window.scrollTo(0, 0) }}
+              onClick={() => { go(p) }}
               className="px-5 py-3 text-xs font-semibold uppercase tracking-wider"
               style={{ border: '1px solid #B8B2A8', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
             >
@@ -2958,39 +3595,40 @@ function ContactPage({ setPage }: { setPage: (p: Page) => void }) {
           {/* Form */}
           <div className="glass-light-subtle p-8">
             <h2 className="font-display text-2xl font-600 mb-8" style={{ color: '#22201D' }}>Send a Message</h2>
-            <form className="space-y-4" onSubmit={e => e.preventDefault()}>
-              {[
-                { label: 'Your Name', type: 'text', placeholder: 'Jane Wanjiku' },
-                { label: 'Email Address', type: 'email', placeholder: 'jane@example.com' },
-                { label: 'Subject', type: 'text', placeholder: 'Prayer request, general inquiry…' },
-              ].map((f) => (
-                <div key={f.label}>
-                  <div className="text-xs uppercase tracking-widest mb-1.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{f.label}</div>
-                  <input
-                    type={f.type}
-                    placeholder={f.placeholder}
-                    className="w-full px-4 py-3 text-sm outline-none"
-                    style={{ border: '1px solid #B8B2A8', background: '#fff', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}
-                  />
-                </div>
-              ))}
-              <div>
-                <div className="text-xs uppercase tracking-widest mb-1.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Message</div>
-                <textarea
-                  rows={5}
-                  placeholder="How can we help?"
-                  className="w-full px-4 py-3 text-sm outline-none resize-none"
-                  style={{ border: '1px solid #B8B2A8', background: '#fff', color: '#22201D', fontFamily: 'Inter, sans-serif' }}
-                />
+            {sent ? (
+              <div className="text-center py-12">
+                <div className="w-14 h-14 mx-auto mb-5 flex items-center justify-center rounded-full" style={{ background: '#0F5C42', color: '#F7F5F1', fontSize: 22 }}>✓</div>
+                <div className="font-display text-2xl font-600 mb-3" style={{ color: '#22201D' }}>Message Sent</div>
+                <p className="text-sm" style={{ color: '#4A4744', fontFamily: 'Inter, sans-serif' }}>
+                  Thank you for reaching out. We'll get back to you soon.
+                </p>
+                <button onClick={() => { setSent(false); setContactName(''); setContactEmail(''); setContactSubject(''); setContactMessage('') }} className="mt-8 px-6 py-3 text-xs font-semibold uppercase tracking-wider" style={{ border: '1px solid #22201D', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }}>
+                  Send Another Message
+                </button>
               </div>
-              <button
-                type="submit"
-                className="w-full py-4 font-semibold uppercase tracking-wider text-sm"
-                style={{ background: '#22201D', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 52 }}
-              >
-                Send Message
-              </button>
-            </form>
+            ) : (
+              <form className="space-y-4" onSubmit={handleContactSubmit}>
+                <div>
+                  <div className="text-xs uppercase tracking-widest mb-1.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Your Name</div>
+                  <input type="text" placeholder="Jane Wanjiku" value={contactName} onChange={(e) => setContactName(e.target.value)} required className="w-full px-4 py-3 text-sm outline-none" style={{ border: '1px solid #B8B2A8', background: '#fff', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }} />
+                </div>
+                <div>
+                  <div className="text-xs uppercase tracking-widest mb-1.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Email Address</div>
+                  <input type="email" placeholder="jane@example.com" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} required className="w-full px-4 py-3 text-sm outline-none" style={{ border: '1px solid #B8B2A8', background: '#fff', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }} />
+                </div>
+                <div>
+                  <div className="text-xs uppercase tracking-widest mb-1.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Subject</div>
+                  <input type="text" placeholder="Prayer request, general inquiry…" value={contactSubject} onChange={(e) => setContactSubject(e.target.value)} className="w-full px-4 py-3 text-sm outline-none" style={{ border: '1px solid #B8B2A8', background: '#fff', color: '#22201D', fontFamily: 'Inter, sans-serif', minHeight: 44 }} />
+                </div>
+                <div>
+                  <div className="text-xs uppercase tracking-widest mb-1.5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>Message</div>
+                  <textarea rows={5} placeholder="How can we help?" value={contactMessage} onChange={(e) => setContactMessage(e.target.value)} required className="w-full px-4 py-3 text-sm outline-none resize-none" style={{ border: '1px solid #B8B2A8', background: '#fff', color: '#22201D', fontFamily: 'Inter, sans-serif' }} />
+                </div>
+                <button type="submit" disabled={sending} className="w-full py-4 font-semibold uppercase tracking-wider text-sm" style={{ background: '#22201D', color: '#F7F5F1', fontFamily: 'Inter, sans-serif', minHeight: 52, opacity: sending ? 0.7 : 1 }}>
+                  {sending ? 'Sending...' : 'Send Message'}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>
@@ -3001,7 +3639,7 @@ function ContactPage({ setPage }: { setPage: (p: Page) => void }) {
 
 // ─── FOOTER ──────────────────────────────────────────────────────────────────
 
-function Footer({ setPage }: { setPage: (p: Page) => void }) {
+function Footer({ go }: { go: (p: Page) => void }) {
   const { t } = useI18n()
   return (
     <footer style={{ background: '#22201D', borderTop: '1px solid rgba(184,178,168,0.1)' }}>
@@ -3035,10 +3673,11 @@ function Footer({ setPage }: { setPage: (p: Page) => void }) {
                 [t('nav.sermons'), 'sermons'],
                 [t('nav.events'), 'events'],
                 [t('nav.ministries'), 'ministries'],
+                ['Order of Service', 'order-of-service'],
                 [t('nav.give'), 'give'],
                 [t('nav.contact'), 'contact'],
               ] as [string, Page][]).map(([label, p]) => (
-                <button key={p} onClick={() => { setPage(p); window.scrollTo(0, 0) }}
+                <button key={p} onClick={() => { go(p) }}
                   className="block text-sm hover:opacity-60 transition-opacity text-left"
                   style={{ color: '#F7F5F1', fontFamily: 'Inter, sans-serif' }}>
                   {label}
@@ -3057,7 +3696,7 @@ function Footer({ setPage }: { setPage: (p: Page) => void }) {
                 [t('menu.mothersUnion'), 'mothers-union'],
                 [t('menu.sundaySchool'), 'sunday-school'],
               ] as [string, Page][]).map(([label, p]) => (
-                <button key={p} onClick={() => { setPage(p); window.scrollTo(0, 0) }}
+                <button key={p} onClick={() => { go(p) }}
                   className="block text-sm hover:opacity-60 transition-opacity text-left"
                   style={{ color: '#F7F5F1', fontFamily: 'Inter, sans-serif' }}>
                   {label}
@@ -3070,9 +3709,9 @@ function Footer({ setPage }: { setPage: (p: Page) => void }) {
           <div>
             <div className="text-xs uppercase tracking-widest mb-5" style={{ color: '#B8B2A8', fontFamily: 'Inter, sans-serif' }}>{t('footer.services')}</div>
             <div className="space-y-3 text-sm" style={{ color: '#F7F5F1', fontFamily: 'Inter, sans-serif' }}>
-              <div>{t('day.sun')} <span style={{ color: '#B8B2A8' }}>8:00 AM</span></div>
-              <div>{t('day.sun')} <span style={{ color: '#B8B2A8' }}>10:30 AM</span></div>
-              <div>{t('day.wed')} <span style={{ color: '#B8B2A8' }}>6:00 PM</span></div>
+              <div>{t('day.sun')} <span style={{ color: '#B8B2A8' }}>8:00 AM – 10:30 AM</span></div>
+              <div>{t('day.sun')} <span style={{ color: '#B8B2A8' }}>10:45 AM – 12:30 PM</span></div>
+              <div>{t('day.sat')} <span style={{ color: '#B8B2A8' }}>2:00 AM – 5:00 AM</span></div>
             </div>
           </div>
 
@@ -3092,7 +3731,7 @@ function Footer({ setPage }: { setPage: (p: Page) => void }) {
                 [t('menu.testimonies'), 'testimonies'],
                 [t('menu.faq'), 'faq'],
               ] as [string, Page][]).map(([label, p]) => (
-                <button key={p} onClick={() => { setPage(p); window.scrollTo(0, 0) }}
+                <button key={p} onClick={() => { go(p) }}
                   className="block text-sm hover:opacity-60 transition-opacity text-left"
                   style={{ color: '#F7F5F1', fontFamily: 'Inter, sans-serif' }}>
                   {label}
@@ -3124,37 +3763,106 @@ function Footer({ setPage }: { setPage: (p: Page) => void }) {
 export default function App() {
   const [page, setPage] = useState<Page>('home')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [history, setHistory] = useState<Page[]>(['home'])
+  const [forwardStack, setForwardStack] = useState<Page[]>([])
+  const [scrollY, setScrollY] = useState(0)
+  const [showScrollTop, setShowScrollTop] = useState(false)
+
+  const go = (p: Page) => {
+    setMenuOpen(false)
+    setHistory((prev) => [...prev, p])
+    setForwardStack([])
+    setPage(p)
+    window.scrollTo(0, 0)
+  }
+
+  const goBack = () => {
+    if (history.length <= 1) return
+    const newHistory = history.slice(0, -1)
+    const current = history[history.length - 1]
+    setHistory(newHistory)
+    setForwardStack((prev) => [...prev, current])
+    setPage(newHistory[newHistory.length - 1])
+    window.scrollTo(0, 0)
+  }
+
+  const goForward = () => {
+    if (forwardStack.length === 0) return
+    const next = forwardStack[forwardStack.length - 1]
+    setForwardStack((prev) => prev.slice(0, -1))
+    setHistory((prev) => [...prev, next])
+    setPage(next)
+    window.scrollTo(0, 0)
+  }
+
+  const scrollTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    const handler = () => {
+      const y = window.scrollY
+      setScrollY(y)
+      setShowScrollTop(y > 400)
+    }
+    window.addEventListener('scroll', handler, { passive: true })
+    return () => window.removeEventListener('scroll', handler)
+  }, [])
 
   return (
     <div style={{ fontFamily: 'Inter, sans-serif' }}>
-      <Nav page={page} setPage={setPage} />
-      <BottomNav page={page} setPage={setPage} onMenu={() => setMenuOpen(true)} />
-      <MobileMenu open={menuOpen} page={page} setPage={setPage} onClose={() => setMenuOpen(false)} />
+      <Nav page={page} go={go} goBack={goBack} goForward={goForward} canGoBack={history.length > 1} canGoForward={forwardStack.length > 0} />
+      <BottomNav page={page} go={go} onMenu={() => setMenuOpen(true)} />
+      <MobileMenu open={menuOpen} page={page} go={go} onClose={() => setMenuOpen(false)} />
 
-      {page === 'home' && <HomePage setPage={setPage} />}
+      {page === 'home' && <HomePage go={go} />}
       {page === 'about' && <AboutPage />}
       {page === 'sermons' && <SermonsPage />}
-      {page === 'plan-visit' && <PlanVisitPage setPage={setPage} />}
+      {page === 'plan-visit' && <PlanVisitPage go={go} />}
       {page === 'give' && <GivePage />}
       {page === 'events' && <EventsPage />}
-      {page === 'ministries' && <MinistriesPage setPage={setPage} />}
-      {page === 'kama' && <KAMAPage setPage={setPage} />}
-      {page === 'mothers-union' && <MothersUnionPage setPage={setPage} />}
-      {page === 'sunday-school' && <SundaySchoolPage setPage={setPage} />}
-      {page === 'youth' && <YouthPage setPage={setPage} />}
-      {page === 'contact' && <ContactPage setPage={setPage} />}
+      {page === 'ministries' && <MinistriesPage go={go} />}
+      {page === 'kama' && <KAMAPage go={go} />}
+      {page === 'mothers-union' && <MothersUnionPage go={go} />}
+      {page === 'sunday-school' && <SundaySchoolPage go={go} />}
+      {page === 'youth' && <YouthPage go={go} />}
+      {page === 'contact' && <ContactPage go={go} />}
       {page === 'service-times' && <ServiceTimesPage />}
-      {page === 'leadership' && <LeadershipPage setPage={setPage} />}
+      {page === 'leadership' && <LeadershipPage go={go} />}
       {page === 'get-involved' && <GetInvolvedPage />}
       {page === 'prayer-requests' && <PrayerRequestsPage />}
       {page === 'news' && <NewsPage />}
       {page === 'gallery' && <GalleryPage />}
-      {page === 'faq' && <FAQPage setPage={setPage} />}
+      {page === 'faq' && <FAQPage go={go} />}
       {page === 'small-groups' && <SmallGroupsFinderPage />}
       {page === 'live' && <LiveStreamPage />}
       {page === 'testimonies' && <TestimoniesPage />}
+      {page === 'bible' && <BiblePage />}
+      {page === 'order-of-service' && <OrderOfService />}
+      {page === 'outreach' && <OutreachPage go={go} />}
+      {page === 'choir' && <ChoirPage go={go} />}
 
-      {page !== 'sermons' && <Footer setPage={setPage} />}
+      {page !== 'sermons' && <Footer go={go} />}
+
+      {/* Scroll to Top Button */}
+      {showScrollTop && (
+        <button
+          onClick={scrollTop}
+          className="fixed z-50 w-12 h-12 flex items-center justify-center rounded-full transition-all hover:scale-110 shadow-lg"
+          style={{
+            bottom: 90,
+            right: 20,
+            background: '#22201D',
+            color: '#F7F5F1',
+            border: '1px solid rgba(184,178,168,0.3)',
+          }}
+          aria-label="Scroll to top"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 15l-6-6-6 6" />
+          </svg>
+        </button>
+      )}
     </div>
   )
 }
