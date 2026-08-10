@@ -144,3 +144,9 @@
 *.stl                filter=lfs diff=lfs merge=lfs -text
 *.nc                 filter=lfs diff=lfs merge=lfs -text
 *.mat                filter=lfs diff=lfs merge=lfs -text
+
+# ---------------------------------------------------------------------------
+# Exclude public/ from LFS — Vercel needs real files, not pointers
+# LAST-MATCHING RULES WIN — these must come after all LFS patterns above
+# ---------------------------------------------------------------------------
+public/**             !filter !diff !merge text=auto
